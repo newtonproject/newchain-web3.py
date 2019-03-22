@@ -99,9 +99,9 @@ of eth-testrpc. While ``eth-tester`` is still in beta, many parts are
 already in better shape than testrpc, so we decided to replace it in v4.
 
 If you were using TestRPC, or were explicitly importing EthereumTesterProvider, like:
-``from web3.providers.tester import EthereumTesterProvider``, then you will need to update.
+``from newchain_web3.providers.tester import EthereumTesterProvider``, then you will need to update.
 
-With v4 you should import with ``from web3 import EthereumTesterProvider``. As before, you'll 
+With v4 you should import with ``from newchain_web3 import EthereumTesterProvider``. As before, you'll 
 need to install Web3.py with the ``tester`` extra to get these features, like:
 
 .. code-block:: bash

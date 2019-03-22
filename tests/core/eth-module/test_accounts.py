@@ -2,7 +2,7 @@
 
 import pytest
 
-from eth_account.messages import (
+from newchain_account.messages import (
     defunct_hash_message,
 )
 from eth_utils import (
@@ -12,18 +12,18 @@ from hexbytes import (
     HexBytes,
 )
 
-from web3 import (
+from newchain_web3 import (
     Account,
     Web3,
 )
-from web3._utils.encoding import (
+from newchain_web3._utils.encoding import (
     to_bytes,
     to_hex,
 )
-from web3._utils.toolz import (
+from newchain_web3._utils.toolz import (
     dissoc,
 )
-from web3.providers.eth_tester import (
+from newchain_web3.providers.eth_tester import (
     EthereumTesterProvider,
 )
 

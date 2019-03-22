@@ -8,10 +8,10 @@ from ethpm import (
 )
 
 from ens import ENS
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     InvalidAddress,
 )
-from web3.pm import (
+from newchain_web3.pm import (
     VyperReferenceRegistry,
 )
 

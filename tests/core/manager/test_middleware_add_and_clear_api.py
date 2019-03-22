@@ -1,9 +1,9 @@
 import pytest
 
-from web3.manager import (
+from newchain_web3.manager import (
     RequestManager,
 )
-from web3.providers import (
+from newchain_web3.providers import (
     BaseProvider,
 )
 

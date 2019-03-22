@@ -24,7 +24,7 @@ Create an :class:`~ens.main.ENS` object (named ``ns`` below) in one of three way
 
 
     # or, with a provider
-    from web3 import IPCProvider
+    from newchain_web3 import IPCProvider
     from ens import ENS
 
     provider = IPCProvider(...)

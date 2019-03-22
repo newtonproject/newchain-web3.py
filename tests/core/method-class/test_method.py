@@ -8,14 +8,14 @@ from eth_utils.toolz import (
     pipe,
 )
 
-from web3 import (
+from newchain_web3 import (
     EthereumTesterProvider,
     Web3,
 )
-from web3.method import (
+from newchain_web3.method import (
     Method,
 )
-from web3.module import (
+from newchain_web3.module import (
     ModuleV2,
 )
 

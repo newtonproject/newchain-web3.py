@@ -1,8 +1,8 @@
-from web3 import Web3
-from web3.providers.auto import (
+from newchain_web3 import Web3
+from newchain_web3.providers.auto import (
     AutoProvider,
 )
-from web3.providers.eth_tester import (
+from newchain_web3.providers.eth_tester import (
     EthereumTesterProvider,
 )
 

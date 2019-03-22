@@ -1,4 +1,4 @@
-from web3.contract import (
+from newchain_web3.contract import (
     parse_block_identifier_int,
 )
 

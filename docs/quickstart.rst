@@ -41,7 +41,7 @@ Use the ``auto`` module to :ref:`guess at common node connection options
 
 .. code-block:: python
 
-    >>> from web3.auto import w3
+    >>> from newchain_web3.auto import w3
     >>> w3.eth.blockNumber
     4000000
 

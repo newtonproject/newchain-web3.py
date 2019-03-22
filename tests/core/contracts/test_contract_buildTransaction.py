@@ -2,10 +2,10 @@
 
 import pytest
 
-from web3._utils.toolz import (
+from newchain_web3._utils.toolz import (
     dissoc,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     ValidationError,
 )
 

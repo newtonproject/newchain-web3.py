@@ -21,11 +21,11 @@ from ens.contract_data import (
     reverse_resolver_bytecode,
     reverse_resolver_bytecode_runtime,
 )
-from web3 import Web3
-from web3.contract import (
+from newchain_web3 import Web3
+from newchain_web3.contract import (
     Contract,
 )
-from web3.providers.eth_tester import (
+from newchain_web3.providers.eth_tester import (
     EthereumTesterProvider,
 )
 

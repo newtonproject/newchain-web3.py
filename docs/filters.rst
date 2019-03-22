@@ -11,7 +11,7 @@ Filtering
 
     .. code-block:: python
 
-        from web3.auto import w3
+        from newchain_web3.auto import w3
 
 The :meth:`web3.eth.Eth.filter` method can be used to setup filters for:
 
@@ -189,7 +189,7 @@ Synchronous
 
     .. code-block:: python
 
-        from web3.auto import w3
+        from newchain_web3.auto import w3
         import time
 
         def handle_event(event):
@@ -228,7 +228,7 @@ entries to a handler.
 
         .. code-block:: python
 
-            from web3.auto import w3
+            from newchain_web3.auto import w3
             import asyncio
 
 
@@ -267,7 +267,7 @@ releasing the ``main`` function for other tasks.
 
         .. code-block:: python
 
-            from web3.auto import w3
+            from newchain_web3.auto import w3
             from threading import Thread
             import time
 

@@ -1,10 +1,10 @@
 import pytest
 
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     TimeExhausted,
     ValidationError,
 )
-from web3.middleware.simulate_unmined_transaction import (
+from newchain_web3.middleware.simulate_unmined_transaction import (
     unmined_receipt_simulator_middleware,
 )
 

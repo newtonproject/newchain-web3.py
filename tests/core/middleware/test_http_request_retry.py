@@ -12,11 +12,11 @@ from requests.exceptions import (
 )
 
 import web3
-from web3.middleware.exception_retry_request import (
+from newchain_web3.middleware.exception_retry_request import (
     check_if_retry_on_failure,
     exception_retry_middleware,
 )
-from web3.providers import (
+from newchain_web3.providers import (
     HTTPProvider,
     IPCProvider,
 )

@@ -38,7 +38,7 @@ Often, the best way to guarantee a correct environment is with ``virtualenv``, l
 
 .. _use_metamask_accounts:
 
-How do I use my MetaMask accounts from Web3.py?
+How do I use my MetaMask accounts from newchain_web3.py?
 --------------------------------------------------------
 Often you don't need to do this, just make a new account in Web3.py,
 and transfer funds from your MetaMask account into it. But if you must...

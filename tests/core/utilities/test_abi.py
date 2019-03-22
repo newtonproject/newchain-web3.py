@@ -1,13 +1,13 @@
 import json
 import pytest
 
-from web3._utils.abi import (
+from newchain_web3._utils.abi import (
     abi_data_tree,
     get_aligned_abi_inputs,
     get_tuple_type_str_parts,
     map_abi_data,
 )
-from web3._utils.normalizers import (
+from newchain_web3._utils.normalizers import (
     BASE_RETURN_NORMALIZERS,
     abi_string_to_text,
     addresses_checksummed,

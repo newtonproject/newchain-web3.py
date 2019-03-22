@@ -42,7 +42,7 @@ returns a higher gas price when the value of the transaction is higher than
 
 .. code-block:: python
 
-    from web3 import Web3
+    from newchain_web3 import Web3
 
     def value_based_gas_price_strategy(web3, transaction_params):
         if transaction_params['value'] > Web3.toWei(1, 'ether'):
@@ -57,7 +57,7 @@ The gas price strategy can be set by calling :meth:`~web3.eth.Eth.setGasPriceStr
 
 .. code-block:: python
 
-    from web3 import Web3
+    from newchain_web3 import Web3
 
     def value_based_gas_price_strategy(web3, transaction_params):
         ...
@@ -106,8 +106,8 @@ Available gas price strategies
 
     .. code-block:: python
 
-        from web3 import Web3, middleware
-        from web3.gas_strategies.time_based import medium_gas_price_strategy
+        from newchain_web3 import Web3, middleware
+        from newchain_web3.gas_strategies.time_based import medium_gas_price_strategy
 
         w3 = Web3()
         w3.eth.setGasPriceStrategy(medium_gas_price_strategy)

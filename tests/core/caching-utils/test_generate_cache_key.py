@@ -8,7 +8,7 @@ from hypothesis import (
     strategies as st,
 )
 
-from web3._utils.caching import (
+from newchain_web3._utils.caching import (
     generate_cache_key,
 )
 

@@ -6,8 +6,8 @@ from hexbytes import (
     HexBytes,
 )
 
-from web3 import Web3
-from web3.datastructures import (
+from newchain_web3 import Web3
+from newchain_web3.datastructures import (
     AttributeDict,
 )
 

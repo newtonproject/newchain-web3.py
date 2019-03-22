@@ -224,7 +224,7 @@ Released October 28, 2018
     - `#1119 <https://github.com/ethereum/web3.py/pull/1119>`_
   - Reject transactions that send ether to non-payable contract functions
     - `#1115 <https://github.com/ethereum/web3.py/pull/1115>`_
-  - Add Auto Infura Ropsten support: ``from web3.auto.infura.ropsten import w3``
+  - Add Auto Infura Ropsten support: ``from newchain_web3.auto.infura.ropsten import w3``
     - `#1124 <https://github.com/ethereum/web3.py/pull/1124>`_
   - Auto-detect trinity IPC file location
     - `#1129 <https://github.com/ethereum/web3.py/pull/1129>`_
@@ -375,8 +375,8 @@ Released June 21, 2018
   - Can send websocket connection parameters in :class:`~web3.providers.websocket.WebsocketProvider`
   - Two new auto-initialization options:
 
-    - ``from web3.auto.gethdev import w3``
-    - ``from web3.auto.infura import w3``
+    - ``from newchain_web3.auto.gethdev import w3``
+    - ``from newchain_web3.auto.infura import w3``
       (After setting the ``INFURA_API_KEY`` environment variable)
   - Alpha support for a new package management tool based on ethpm-spec, see :doc:`web3.pm`
 - Bugfixes
@@ -584,7 +584,7 @@ Released Feb 8, 2018
 - New docs for working with private keys + set up doctests
 - First parity integration tests
 - replace internal implementation of w3.eth.account with
-  :class:`eth_account.account.Account`
+  :class:`newchain_account.account.Account`
 
 v4.0.0-beta.8
 -------------
@@ -662,7 +662,7 @@ Released Dec 1, 2017
 * Fix encoding of ABI types: ``bytes[]`` and ``string[]``
 * Windows connection error bugfix
 * Bugfix message signatures that were broken ~1% of the time (zero-pad ``r`` and ``s``)
-* Autoinit web3 now produces None instead of raising an exception on ``from web3.auto import w3``
+* Autoinit web3 now produces None instead of raising an exception on ``from newchain_web3.auto import w3``
 * Clearer errors on formatting failure (includes field name that failed)
 * Python modernization, removing Py2 compatibility cruft
 * Update dependencies with changed names, now:
@@ -698,7 +698,7 @@ v4.0.0-beta.1
 * ENS names can be used anywhere that a hex address can
 * Sign transactions and messages with local private keys
 * New filter mechanism: :meth:`~web3.utils.filters.Filter.get_all_entries` and :meth:`~web3.utils.filters.Filter.get_new_entries`
-* Quick automatic initialization with ``from web3.auto import w3``
+* Quick automatic initialization with ``from newchain_web3.auto import w3``
 * All addresses must be supplied with an EIP-55 checksum
 * All addresses are returned with a checksum
 * Renamed ``Web3.toDecimal()`` to ``toInt()``, see: :ref:`overview_type_conversions`

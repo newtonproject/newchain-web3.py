@@ -91,7 +91,7 @@ to the request inside the innermost layer of the onion. Here is a (simplified) d
 
 .. code-block:: none
 
-                                         New request from web3.py
+                                         New request from newchain_web3.py
 
                                                      |
                                                      |
@@ -207,7 +207,7 @@ To add or remove items in different layers, use the following API:
 
     .. code-block:: python
 
-        >>> from web3.middleware import pythonic_middleware, attrdict_middleware
+        >>> from newchain_web3.middleware import pythonic_middleware, attrdict_middleware
         >>> w3 = Web3(...)
 
         >>> w3.middleware_onion.replace(pythonic_middleware, attrdict_middleware)
@@ -332,7 +332,7 @@ The easiest way to connect to a default ``geth --dev`` instance which loads the 
 
 .. code-block:: python
 
-    >>> from web3.auto.gethdev import w3
+    >>> from newchain_web3.auto.gethdev import w3
 
     # confirm that the connection succeeded
     >>> w3.version.node
@@ -344,12 +344,12 @@ unique IPC location and loads the middleware:
 
 .. code-block:: python
 
-    >>> from web3 import Web3, IPCProvider
+    >>> from newchain_web3 import Web3, IPCProvider
 
     # connect to the IPC location started with 'geth --dev --datadir ~/mynode'
     >>> w3 = Web3(IPCProvider('~/mynode/geth.ipc'))
 
-    >>> from web3.middleware import geth_poa_middleware
+    >>> from newchain_web3.middleware import geth_poa_middleware
 
     # inject the poa compatibility middleware to the innermost layer
     >>> w3.middleware_onion.inject(geth_poa_middleware, layer=0)
@@ -380,9 +380,9 @@ retrieved using JSON-RPC endpoints that don't rely on server state.
 
 .. code-block:: python
 
-    >>> from web3 import Web3, EthereumTesterProvider
+    >>> from newchain_web3 import Web3, EthereumTesterProvider
     >>> w3 = Web3(EthereumTesterProvider)
-    >>> from web3.middleware import local_filter_middleware
+    >>> from newchain_web3.middleware import local_filter_middleware
     >>> w3.middleware_onion.add(local_filter_middleware())
 
     #  Normal block and log filter apis behave as before.
@@ -401,16 +401,16 @@ This middleware automatically captures transactions, signs them, and sends them 
 
       Keys can be in any of the following formats:
 
-      * An ``eth_account.LocalAccount`` object
-      * An ``eth_keys.PrivateKey`` object
+      * An ``newchain_account.LocalAccount`` object
+      * An ``newchain_keys.PrivateKey`` object
       * A raw private key as a hex string or byte string
 
 .. code-block:: python
 
-   >>> from web3 import Web3, EthereumTesterProvider
+   >>> from newchain_web3 import Web3, EthereumTesterProvider
    >>> w3 = Web3(EthereumTesterProvider)
-   >>> from web3.middleware import construct_sign_and_send_raw_middleware
-   >>> from eth_account import Account
+   >>> from newchain_web3.middleware import construct_sign_and_send_raw_middleware
+   >>> from newchain_account import Account
    >>> acct = Account.create('KEYSMASH FJAFJKLDSKF7JKFDJ 1530')
    >>> w3.middleware_onion.add(construct_sign_and_send_raw_middleware(acct))
    >>> w3.eth.defaultAccount = acct.address

@@ -11,11 +11,11 @@ from ethpm.contract import (
     LinkableContract,
 )
 
-from web3 import Web3
-from web3.exceptions import (
+from newchain_web3 import Web3
+from newchain_web3.exceptions import (
     PMError,
 )
-from web3.pm import (
+from newchain_web3.pm import (
     ERCRegistry,
     VyperReferenceRegistry,
     get_vyper_registry_manifest,

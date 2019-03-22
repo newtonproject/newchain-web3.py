@@ -1,6 +1,6 @@
 import pytest
 
-from web3._utils.filters import (
+from newchain_web3._utils.filters import (
     construct_event_filter_params,
 )
 

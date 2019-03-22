@@ -4,7 +4,7 @@ from flaky import (
     flaky,
 )
 
-from web3._utils.module_testing import (
+from newchain_web3._utils.module_testing import (
     EthModuleTest,
     ParityModuleTest as TraceModuleTest,
     PersonalModuleTest,

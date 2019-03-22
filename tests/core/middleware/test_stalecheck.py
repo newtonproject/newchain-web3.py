@@ -5,13 +5,13 @@ from unittest.mock import (
     patch,
 )
 
-from web3.datastructures import (
+from newchain_web3.datastructures import (
     AttributeDict,
 )
-from web3.middleware import (
+from newchain_web3.middleware import (
     make_stalecheck_middleware,
 )
-from web3.middleware.stalecheck import (
+from newchain_web3.middleware.stalecheck import (
     StaleBlockchain,
     _isfresh,
 )

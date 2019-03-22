@@ -14,7 +14,7 @@ from ens.constants import (
 from ens.main import (
     UnauthorizedError,
 )
-from web3 import Web3
+from newchain_web3 import Web3
 
 
 """

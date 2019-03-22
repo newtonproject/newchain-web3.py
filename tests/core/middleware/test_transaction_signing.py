@@ -1,7 +1,7 @@
 import pytest
 
-import eth_account
-import eth_keys
+import newchain_account
+import newchain_keys
 from eth_tester.exceptions import (
     ValidationError,
 )
@@ -13,26 +13,26 @@ from hexbytes import (
     HexBytes,
 )
 
-from web3 import Web3
-from web3._utils.toolz import (
+from newchain_web3 import Web3
+from newchain_web3._utils.toolz import (
     identity,
     merge,
     valfilter,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     InvalidAddress,
 )
-from web3.middleware import (
+from newchain_web3.middleware import (
     construct_result_generator_middleware,
     construct_sign_and_send_raw_middleware,
 )
-from web3.middleware.signing import (
+from newchain_web3.middleware.signing import (
     gen_normalized_accounts,
 )
-from web3.providers import (
+from newchain_web3.providers import (
     BaseProvider,
 )
-from web3.providers.eth_tester import (
+from newchain_web3.providers.eth_tester import (
     EthereumTesterProvider,
 )
 
@@ -47,8 +47,8 @@ PRIVATE_KEY_2 = to_bytes(
 ADDRESS_2 = '0x91eD14b5956DBcc1310E65DC4d7E82f02B95BA46'
 
 KEY_FUNCS = (
-    eth_keys.keys.PrivateKey,
-    eth_account.Account.privateKeyToAccount,
+    newchain_keys.keys.PrivateKey,
+    newchain_account.Account.privateKeyToAccount,
     HexBytes,
     to_hex,
     identity,
@@ -62,12 +62,12 @@ MIXED_KEY_MIXED_TYPE = tuple(
 )
 
 SAME_KEY_SAME_TYPE = (
-    eth_keys.keys.PrivateKey(PRIVATE_KEY_1),
-    eth_keys.keys.PrivateKey(PRIVATE_KEY_1)
+    newchain_keys.keys.PrivateKey(PRIVATE_KEY_1),
+    newchain_keys.keys.PrivateKey(PRIVATE_KEY_1)
 )
 
 MIXED_KEY_SAME_TYPE = (
-    eth_keys.keys.PrivateKey(PRIVATE_KEY_1), eth_keys.keys.PrivateKey(PRIVATE_KEY_2)
+    newchain_keys.keys.PrivateKey(PRIVATE_KEY_1), newchain_keys.keys.PrivateKey(PRIVATE_KEY_2)
 )
 
 
@@ -188,7 +188,7 @@ def w3():
 )
 def test_gen_normalized_accounts(key_object):
     accounts = gen_normalized_accounts(key_object)
-    assert all(isinstance(account, eth_account.local.LocalAccount) for account in accounts.values())
+    assert all(isinstance(account, newchain_account.local.LocalAccount) for account in accounts.values())
 
 
 def test_gen_normalized_accounts_type_error(w3):

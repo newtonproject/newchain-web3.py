@@ -7,7 +7,7 @@ from eth_utils import (
     decode_hex,
 )
 
-from web3.contract import (
+from newchain_web3.contract import (
     CONCISE_NORMALIZERS,
     ConciseContract,
     ConciseMethod,

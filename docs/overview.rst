@@ -31,7 +31,7 @@ local development this would be something like ``ws://127.0.0.1:8546``.
 
 .. code-block:: python
 
-    >>> from web3 import Web3, HTTPProvider, IPCProvider, WebsocketProvider
+    >>> from newchain_web3 import Web3, HTTPProvider, IPCProvider, WebsocketProvider
 
     # Note that you should create only one RPCProvider per
     # process, as it recycles underlying TCP/IP network connections between

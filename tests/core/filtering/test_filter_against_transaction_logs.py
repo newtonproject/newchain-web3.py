@@ -5,7 +5,7 @@ from flaky import (
     flaky,
 )
 
-from web3._utils.threads import (
+from newchain_web3._utils.threads import (
     Timeout,
 )
 

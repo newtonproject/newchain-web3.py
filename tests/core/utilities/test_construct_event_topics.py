@@ -1,6 +1,6 @@
 import pytest
 
-from web3._utils.events import (
+from newchain_web3._utils.events import (
     construct_event_topic_set,
 )
 

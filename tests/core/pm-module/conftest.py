@@ -24,8 +24,8 @@ from pytest_ethereum.deployer import (
     Deployer,
 )
 
-from web3 import Web3
-from web3.pm import (
+from newchain_web3 import Web3
+from newchain_web3.pm import (
     SolidityReferenceRegistry,
     VyperReferenceRegistry,
 )

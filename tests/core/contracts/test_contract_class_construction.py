@@ -5,10 +5,10 @@ from eth_utils import (
     decode_hex,
 )
 
-from web3.contract import (
+from newchain_web3.contract import (
     Contract,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     FallbackNotFound,
 )
 

@@ -1,7 +1,7 @@
-from web3._utils.threads import (
+from newchain_web3._utils.threads import (
     Timeout,
 )
-from web3.providers.eth_tester import (
+from newchain_web3.providers.eth_tester import (
     EthereumTesterProvider,
 )
 

@@ -1,13 +1,13 @@
 import pytest
 
-from web3 import (
+from newchain_web3 import (
     EthereumTesterProvider,
     Web3,
 )
-from web3.providers.eth_tester.main import (
+from newchain_web3.providers.eth_tester.main import (
     AsyncEthereumTesterProvider,
 )
-from web3.version import (
+from newchain_web3.version import (
     AsyncVersion,
     BlockingVersion,
     Version,

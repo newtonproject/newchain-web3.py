@@ -9,13 +9,13 @@ from threading import (
 import time
 import uuid
 
-from web3.auto.gethdev import (
+from newchain_web3.auto.gethdev import (
     w3,
 )
-from web3.middleware import (
+from newchain_web3.middleware import (
     construct_fixture_middleware,
 )
-from web3.providers.ipc import (
+from newchain_web3.providers.ipc import (
     IPCProvider,
 )
 

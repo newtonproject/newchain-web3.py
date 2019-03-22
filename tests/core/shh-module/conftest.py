@@ -1,6 +1,6 @@
 import pytest
 
-from web3.shh import (
+from newchain_web3.shh import (
     Shh,
 )
 

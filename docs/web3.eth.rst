@@ -119,7 +119,7 @@ The following properties are available on the ``web3.eth`` namespace.
 
 .. py:attribute:: Eth.accounts
 
-    * Delegates to ``eth_accounts`` RPC Method
+    * Delegates to ``newchain_accounts`` RPC Method
 
     Returns the list of known accounts.
 
@@ -826,7 +826,7 @@ Contracts
 
     .. code-block:: python
 
-        from web3 import Web3
+        from newchain_web3 import Web3
 
         w3 = Web3(...)
 
@@ -847,7 +847,7 @@ Contracts
 
     .. code-block:: python
 
-        from web3 import Web3
+        from newchain_web3 import Web3
 
         w3 = Web3(...)
 

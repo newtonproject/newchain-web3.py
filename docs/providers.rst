@@ -48,7 +48,7 @@ Once you have configured your provider, for example:
 
 .. code-block:: python
 
-    from web3 import Web3
+    from newchain_web3 import Web3
     my_provider = Web3.IPCProvider('/my/node/ipc/path')
 
 Then you are ready to initialize your Web3 instance, like so:
@@ -68,11 +68,11 @@ when you initialize like so:
 
 .. code-block:: python
 
-    from web3.auto import w3
+    from newchain_web3.auto import w3
 
     # which is equivalent to:
 
-    from web3 import Web3
+    from newchain_web3 import Web3
     w3 = Web3()
 
 Sometimes, web3 cannot automatically detect where your node is.
@@ -98,7 +98,7 @@ succesful connection it can make:
 2. :class:`~web3.providers.ipc.IPCProvider`, which looks for several IPC file locations.
    `IPCProvider` will not automatically detect a testnet connection, it is suggested that the
     user instead uses a `w3` instance from `web3.auto.infura` (eg.
-    `from web3.auto.infura.ropsten import w3`) if they want to auto-detect a testnet.
+    `from newchain_web3.auto.infura.ropsten import w3`) if they want to auto-detect a testnet.
 3. :class:`~web3.providers.rpc.HTTPProvider`, which attempts to connect to "http://localhost:8545"
 4. None - if no providers are successful, you can still use Web3 APIs
    that do not require a connection, like:
@@ -122,7 +122,7 @@ For example, the following retrieves the client enode endpoint for both geth and
 
 .. code-block:: python
 
-    from web3.auto import w3
+    from newchain_web3.auto import w3
 
     connected = w3.isConnected()
 
@@ -170,7 +170,7 @@ Then set the environment variable ``INFURA_API_KEY`` with your API key::
 
 .. code-block:: python
 
-    >>> from web3.auto.infura import w3
+    >>> from newchain_web3.auto.infura import w3
     
     # confirm that the connection succeeded
     >>> w3.isConnected()
@@ -183,7 +183,7 @@ To connect to a ``geth --dev`` Proof of Authority instance with defaults:
 
 .. code-block:: python
 
-    >>> from web3.auto.gethdev import w3
+    >>> from newchain_web3.auto.gethdev import w3
     
     # confirm that the connection succeeded
     >>> w3.isConnected()
@@ -212,7 +212,7 @@ HTTPProvider
 
     .. code-block:: python
 
-        >>> from web3 import Web3
+        >>> from newchain_web3 import Web3
         >>> w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
 
     Note that you should create only one HTTPProvider per python
@@ -227,7 +227,7 @@ HTTPProvider
 
     .. code-block:: python
 
-        >>> from web3 import Web3
+        >>> from newchain_web3 import Web3
         >>> w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545", request_kwargs={'timeout': 60}))
 
 
@@ -243,7 +243,7 @@ IPCProvider
 
     .. code-block:: python
 
-        >>> from web3 import Web3
+        >>> from newchain_web3 import Web3
         >>> w3 = Web3(Web3.IPCProvider("~/Library/Ethereum/geth.ipc"))
 
     If no ``ipc_path`` is specified, it will use the first IPC file
@@ -277,7 +277,7 @@ WebsocketProvider
 
     .. code-block:: python
 
-        >>> from web3 import Web3
+        >>> from newchain_web3 import Web3
         >>> w3 = Web3(Web3.WebsocketProvider("ws://127.0.0.1:8546"))
 
     Under the hood, the ``WebsocketProvider`` uses the python websockets library for
@@ -288,7 +288,7 @@ WebsocketProvider
 
     .. code-block:: python
 
-        >>> from web3 import Web3
+        >>> from newchain_web3 import Web3
         >>> w3 = Web3(Web3.WebsocketProvider("http://127.0.0.1:8546", websocket_kwargs={'timeout': 60}))
 
 .. py:currentmodule:: web3.providers.eth_tester
@@ -309,7 +309,7 @@ EthereumTesterProvider
 
     .. code-block:: python
 
-        >>> from web3 import Web3, EthereumTesterProvider
+        >>> from newchain_web3 import Web3, EthereumTesterProvider
         >>> w3 = Web3(EthereumTesterProvider())
 
 

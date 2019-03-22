@@ -1,21 +1,14 @@
 # Web3.py
 
-[![Join the chat at https://gitter.im/ethereum/web3.py](https://badges.gitter.im/ethereum/web3.py.svg)](https://gitter.im/ethereum/web3.py?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-[![Build Status](https://circleci.com/gh/ethereum/web3.py.svg?style=shield)](https://circleci.com/gh/ethereum/web3.py)
-
-
-A Python implementation of [web3.js](https://github.com/ethereum/web3.js)
+A Python implementation of NewChain Web3 which is forked from https://github.com/ethereum/web3.py.
 
 * Python 3.6+ support
-
-Read more in the [documentation on ReadTheDocs](http://web3py.readthedocs.io/). [View the change log on Github](docs/releases.rst).
 
 ## Developer Setup
 
 ```sh
-git clone git@github.com:ethereum/web3.py.git
-cd web3.py
+git clone git@github.com:xiawu/newchain-web3.py.git
+cd newchain-web3.py
 ```
 
 Please see OS-specific instructions for:

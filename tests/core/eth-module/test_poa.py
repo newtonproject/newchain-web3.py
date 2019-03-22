@@ -1,9 +1,9 @@
 import pytest
 
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     ValidationError,
 )
-from web3.middleware import (
+from newchain_web3.middleware import (
     construct_fixture_middleware,
     geth_poa_middleware,
 )

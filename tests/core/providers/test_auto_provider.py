@@ -2,15 +2,15 @@ import importlib
 import logging
 import pytest
 
-from web3.auto import (
+from newchain_web3.auto import (
     infura,
 )
-from web3.providers import (
+from newchain_web3.providers import (
     HTTPProvider,
     IPCProvider,
     WebsocketProvider,
 )
-from web3.providers.auto import (
+from newchain_web3.providers.auto import (
     load_provider_from_environment,
 )
 

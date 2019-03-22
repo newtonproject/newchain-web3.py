@@ -53,7 +53,7 @@ Some common things you might want to do with a `Local Private Key` are:
 
 Using private keys usually involves ``w3.eth.account`` in one way or another. Read on for more,
 or see a full list of things you can do in the docs for
-:class:`eth_account.Account <eth_account.account.Account>`.
+:class:`newchain_account.Account <newchain_account.account.Account>`.
 
 Extract private key from geth keyfile
 ---------------------------------------------
@@ -83,8 +83,8 @@ is provided by :meth:`w3.eth.sign() <web3.eth.Eth.sign>`.
 
 .. doctest::
 
-    >>> from web3.auto import w3
-    >>> from eth_account.messages import defunct_hash_message
+    >>> from newchain_web3.auto import w3
+    >>> from newchain_account.messages import defunct_hash_message
 
     >>> msg = "I♥SF"
     >>> private_key = b"\xb2\\}\xb3\x1f\xee\xd9\x12''\xbf\t9\xdcv\x9a\x96VK-\xe4\xc4rm\x03[6\xec\xf1\xe5\xb3d"
@@ -133,7 +133,7 @@ You might have produced the signed_message locally, as in
 
 .. doctest::
 
-    >>> from web3 import Web3
+    >>> from newchain_web3 import Web3
 
     # ecrecover in Solidity expects v as a native uint8, but r and s as left-padded bytes32
     # Remix / web3.js expect r and s to be encoded to hex
@@ -158,8 +158,8 @@ this will prepare it for Solidity:
 
 .. doctest::
 
-    >>> from web3 import Web3
-    >>> from eth_account.messages import defunct_hash_message
+    >>> from newchain_web3 import Web3
+    >>> from newchain_account.messages import defunct_hash_message
 
     >>> hex_message = '0x49e299a55346'
     >>> hex_signature = '0xe6ca9bba58c88611fad66a6ce8f996908195593807c4b38bd528d2cff09d4eb33e5bfbbf4d3e39b1a2fd816a7680c19ebebaf3a141b239934ad43cb33fcec8ce1c'
@@ -250,7 +250,7 @@ To sign a transaction locally that will invoke a smart contract:
 #. Initialize your :meth:`Contract <web3.eth.Eth.contract>` object
 #. Build the transaction
 #. Sign the transaction, with :meth:`w3.eth.account.signTransaction()
-   <eth_account.account.Account.signTransaction>`
+   <newchain_account.account.Account.signTransaction>`
 #. Broadcast the transaction with :meth:`~web3.eth.Eth.sendRawTransaction`
 
 .. testsetup::
@@ -260,7 +260,7 @@ To sign a transaction locally that will invoke a smart contract:
 .. doctest::
 
     >>> from ethtoken.abi import EIP20_ABI
-    >>> from web3.auto import w3
+    >>> from newchain_web3.auto import w3
 
     >>> unicorns = w3.eth.contract(address="0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359", abi=EIP20_ABI)
 

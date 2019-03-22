@@ -1,4 +1,4 @@
-from web3._utils.empty import (
+from newchain_web3._utils.empty import (
     empty,
 )
 

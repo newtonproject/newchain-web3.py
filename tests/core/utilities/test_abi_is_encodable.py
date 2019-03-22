@@ -1,6 +1,6 @@
 import pytest
 
-from web3._utils.abi import (
+from newchain_web3._utils.abi import (
     is_encodable,
 )
 

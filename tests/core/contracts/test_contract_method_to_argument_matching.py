@@ -1,13 +1,13 @@
 import json
 import pytest
 
-from web3._utils.abi import (
+from newchain_web3._utils.abi import (
     get_abi_input_types,
 )
-from web3._utils.function_identifiers import (
+from newchain_web3._utils.function_identifiers import (
     FallbackFn,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     ValidationError,
 )
 

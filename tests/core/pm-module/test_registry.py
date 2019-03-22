@@ -4,7 +4,7 @@ from eth_utils import (
     is_address,
 )
 
-from web3.pm import (
+from newchain_web3.pm import (
     ERCRegistry,
     VyperReferenceRegistry,
 )

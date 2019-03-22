@@ -5,7 +5,7 @@ from ens.main import (
     UnauthorizedError,
     UnownedName,
 )
-from web3 import Web3
+from newchain_web3 import Web3
 
 
 """
