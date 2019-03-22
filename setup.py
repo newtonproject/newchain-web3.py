@@ -60,7 +60,7 @@ extras_require['dev'] = (
 setup(
     name='newchain-web3',
     # *IMPORTANT*: Don't manually change the version here. Use the 'bumpversion' utility.
-    version='version='0.2.0',',
+    version='0.0.0',
     description="""NewChain-Web3.py""",
     long_description_markdown_filename='README.md',
     author='Xia Wu',
