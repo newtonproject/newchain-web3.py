@@ -30,7 +30,7 @@ extras_require = {
         "sphinx_rtd_theme>=0.1.9",
         "toposort>=1.4",
         "urllib3",
-        "web3>=2.1.0",
+        "newchain-web3>=0.1.0",
         "wheel"
     ],
     'dev': [
@@ -58,7 +58,7 @@ extras_require['dev'] = (
 )
 
 setup(
-    name='web3',
+    name='newchain-web3',
     # *IMPORTANT*: Don't manually change the version here. Use the 'bumpversion' utility.
     version='0.0.0',
     description="""NewChain-Web3.py""",
