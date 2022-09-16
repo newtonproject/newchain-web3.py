@@ -21,7 +21,7 @@ from typing import (
 from newchain_web3._utils.threads import (
     Timeout,
 )
-from web3.types import (
+from newchain_web3.types import (
     RPCEndpoint,
     RPCResponse,
 )

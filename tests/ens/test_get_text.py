@@ -8,7 +8,7 @@ from ens.exceptions import (
     ResolverNotFound,
     UnsupportedFunction,
 )
-from web3 import Web3
+from newchain_web3 import Web3
 
 GET_TEXT_TEST_CASES = (
     ("avatar", "tester.jpeg"),

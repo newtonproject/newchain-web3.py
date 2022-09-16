@@ -10,8 +10,8 @@ from typing import (
 from ethpm import (
     Package,
 )
-from web3 import Web3
-from web3.tools.pytest_ethereum.deployer import (
+from newchain_web3 import Web3
+from newchain_web3.tools.pytest_ethereum.deployer import (
     Deployer,
 )
 

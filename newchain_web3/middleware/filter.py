@@ -38,13 +38,13 @@ from eth_utils.toolz import (
     valfilter,
 )
 
-from web3._utils.formatters import (
+from newchain_web3._utils.formatters import (
     hex_to_integer,
 )
-from web3._utils.rpc_abi import (
+from newchain_web3._utils.rpc_abi import (
     RPC,
 )
-from web3.types import (  # noqa: F401
+from newchain_web3.types import (  # noqa: F401
     FilterParams,
     LatestBlockParam,
     LogReceipt,
@@ -54,7 +54,7 @@ from web3.types import (  # noqa: F401
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 if "WEB3_MAX_BLOCK_REQUEST" in os.environ:
     MAX_BLOCK_REQUEST = to_int(text=os.environ["WEB3_MAX_BLOCK_REQUEST"])

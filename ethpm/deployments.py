@@ -13,10 +13,10 @@ from eth_typing import (
 from ethpm.validation.package import (
     validate_contract_name,
 )
-from web3._utils.compat import (
+from newchain_web3._utils.compat import (
     TypedDict,
 )
-from web3.eth import (
+from newchain_web3.eth import (
     Contract,
 )
 

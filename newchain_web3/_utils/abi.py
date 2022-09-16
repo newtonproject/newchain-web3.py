@@ -76,14 +76,14 @@ from newchain_web3._utils.toolz import (
 from newchain_web3.exceptions import (
     FallbackNotFound,
 )
-from web3.types import (
+from newchain_web3.types import (
     ABI,
     ABIEvent,
     ABIEventParams,
     ABIFunction,
     ABIFunctionParams,
 )
-from web3.utils import (  # public utils module
+from newchain_web3.utils import (  # public utils module
     get_abi_input_names,
 )
 

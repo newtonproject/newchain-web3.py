@@ -38,12 +38,12 @@ from ethpm.backends.registry import (
 from ethpm.exceptions import (
     CannotHandleURI,
 )
-from web3.types import (
+from newchain_web3.types import (
     BlockNumber,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa F401
+    from newchain_web3 import Web3  # noqa F401
 
 
 def resolve_uri_contents(uri: URI, fingerprint: bool = None) -> bytes:

@@ -6,14 +6,14 @@ from eth_typing import (
     ChecksumAddress,
 )
 
-from web3._utils.rpc_abi import (
+from newchain_web3._utils.rpc_abi import (
     RPC,
 )
-from web3.method import (
+from newchain_web3.method import (
     Method,
     default_root_munger,
 )
-from web3.types import (
+from newchain_web3.types import (
     BlockNumber,
     Wei,
 )

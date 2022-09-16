@@ -19,7 +19,7 @@ from ethpm.exceptions import (
     BytecodeLinkingError,
     EthPMValidationError,
 )
-from web3.eth import (
+from newchain_web3.eth import (
     Contract,
 )
 

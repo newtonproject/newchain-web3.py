@@ -4,15 +4,15 @@ from eth_typing import (
     BlockNumber,
 )
 
-from web3._utils.async_transactions import (
+from newchain_web3._utils.async_transactions import (
     fill_transaction_defaults,
     get_block_gas_limit,
     get_buffered_gas_estimate,
 )
-from web3._utils.utility_methods import (
+from newchain_web3._utils.utility_methods import (
     none_in_dict,
 )
-from web3.constants import (
+from newchain_web3.constants import (
     DYNAMIC_FEE_TXN_PARAMS,
 )
 

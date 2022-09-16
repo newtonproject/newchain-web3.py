@@ -6,7 +6,7 @@ from typing import (
     Sequence,
 )
 
-from web3.types import (
+from newchain_web3.types import (
     RPCEndpoint,
     RPCResponse,
     Middleware,
@@ -76,7 +76,7 @@ from .validation import (  # noqa: F401
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 def combine_middlewares(

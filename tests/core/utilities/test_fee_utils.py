@@ -4,11 +4,11 @@ from eth_utils import (
     is_integer,
 )
 
-from web3.middleware import (
+from newchain_web3.middleware import (
     construct_error_generator_middleware,
     construct_result_generator_middleware,
 )
-from web3.types import (
+from newchain_web3.types import (
     RPCEndpoint,
 )
 

@@ -12,42 +12,42 @@ from _utils import (
     async_partial,
     deploy,
 )
-from web3._utils.module_testing.emitter_contract import (
+from newchain_web3._utils.module_testing.emitter_contract import (
     CONTRACT_EMITTER_ABI,
     CONTRACT_EMITTER_CODE,
     CONTRACT_EMITTER_RUNTIME,
 )
-from web3._utils.module_testing.emitter_contract_old import (
+from newchain_web3._utils.module_testing.emitter_contract_old import (
     CONTRACT_EMITTER_ABI_OLD,
     CONTRACT_EMITTER_CODE_OLD,
     CONTRACT_EMITTER_RUNTIME_OLD,
 )
-from web3._utils.module_testing.event_contract import (
+from newchain_web3._utils.module_testing.event_contract import (
     EVNT_CONTRACT_ABI,
     EVNT_CONTRACT_CODE,
     EVNT_CONTRACT_RUNTIME,
 )
-from web3._utils.module_testing.fallback_contract import (
+from newchain_web3._utils.module_testing.fallback_contract import (
     CONTRACT_FALLBACK_FUNCTION_ABI,
     CONTRACT_FALLBACK_FUNCTION_CODE,
     CONTRACT_FALLBACK_FUNCTION_RUNTIME,
 )
-from web3._utils.module_testing.indexed_event_contract import (
+from newchain_web3._utils.module_testing.indexed_event_contract import (
     IND_EVENT_CONTRACT_ABI,
     IND_EVENT_CONTRACT_CODE,
     IND_EVENT_CONTRACT_RUNTIME,
 )
-from web3._utils.module_testing.no_receive_contract import (
+from newchain_web3._utils.module_testing.no_receive_contract import (
     CONTRACT_NO_RECEIVE_FUNCTION_ABI,
     CONTRACT_NO_RECEIVE_FUNCTION_CODE,
     CONTRACT_NO_RECEIVE_FUNCTION_RUNTIME,
 )
-from web3._utils.module_testing.receive_contract import (
+from newchain_web3._utils.module_testing.receive_contract import (
     CONTRACT_RECEIVE_FUNCTION_ABI,
     CONTRACT_RECEIVE_FUNCTION_CODE,
     CONTRACT_RECEIVE_FUNCTION_RUNTIME,
 )
-from web3._utils.module_testing.revert_contract import (
+from newchain_web3._utils.module_testing.revert_contract import (
     _REVERT_CONTRACT_ABI,
     REVERT_CONTRACT_BYTECODE,
     REVERT_CONTRACT_RUNTIME_CODE,

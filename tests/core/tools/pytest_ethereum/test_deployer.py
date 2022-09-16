@@ -8,8 +8,8 @@ from eth_utils import (
 from ethpm import (
     ASSETS_DIR,
 )
-import web3
-from web3.tools.pytest_ethereum.exceptions import (
+import newchain_web3
+from newchain_web3.tools.pytest_ethereum.exceptions import (
     DeployerError,
 )
 
@@ -29,7 +29,7 @@ def greeter(deployer, pte_assets_dir):
 
 def test_user_code_with_fixture(greeter):
     greeter_instance = greeter.deployments.get_instance("greeter")
-    assert isinstance(greeter_instance, web3.contract.Contract)
+    assert isinstance(greeter_instance, newchain_web3.contract.Contract)
     greeting = greeter_instance.functions.greet().call()
     assert greeting == b"Hello"
 

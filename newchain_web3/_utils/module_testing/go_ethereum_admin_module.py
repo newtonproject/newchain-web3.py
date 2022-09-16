@@ -4,15 +4,15 @@ from typing import (
     List,
 )
 
-from web3.datastructures import (
+from newchain_web3.datastructures import (
     AttributeDict,
 )
-from web3.types import (
+from newchain_web3.types import (
     EnodeURI,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 class GoEthereumAdminModuleTest:

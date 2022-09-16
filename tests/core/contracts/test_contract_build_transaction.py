@@ -4,7 +4,7 @@ from eth_utils.toolz import (
     dissoc,
 )
 
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     ValidationError,
 )
 

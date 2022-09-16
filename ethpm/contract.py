@@ -27,16 +27,16 @@ from ethpm.exceptions import (
 from ethpm.validation.misc import (
     validate_empty_bytes,
 )
-from web3._utils.validation import (
+from newchain_web3._utils.validation import (
     validate_address,
 )
-from web3.contract import (
+from newchain_web3.contract import (
     Contract,
     ContractConstructor,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 class LinkableContract(Contract):

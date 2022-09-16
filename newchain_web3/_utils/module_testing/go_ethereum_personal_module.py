@@ -18,19 +18,19 @@ from hexbytes import (
     HexBytes,
 )
 
-from web3 import (
+from newchain_web3 import (
     constants,
 )
-from web3.datastructures import (
+from newchain_web3.datastructures import (
     AttributeDict,
 )
-from web3.types import (  # noqa: F401
+from newchain_web3.types import (  # noqa: F401
     TxParams,
     Wei,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 PRIVATE_KEY_HEX = "0x56ebb41875ceedd42e395f730e03b5c44989393c9f0484ee6bc05f933673458f"
 SECOND_PRIVATE_KEY_HEX = (

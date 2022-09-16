@@ -12,10 +12,10 @@ from eth_typing import (
 from ethpm import (
     Package,
 )
-from web3.tools.pytest_ethereum.exceptions import (
+from newchain_web3.tools.pytest_ethereum.exceptions import (
     DeployerError,
 )
-from web3.tools.pytest_ethereum.linker import (
+from newchain_web3.tools.pytest_ethereum.linker import (
     deploy,
     linker,
 )

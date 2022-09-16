@@ -1,8 +1,8 @@
-from web3 import Web3
-from web3.middleware import (
+from newchain_web3 import Web3
+from newchain_web3.middleware import (
     geth_poa_middleware,
 )
-from web3.providers.auto import (
+from newchain_web3.providers.auto import (
     load_provider_from_uri,
 )
 

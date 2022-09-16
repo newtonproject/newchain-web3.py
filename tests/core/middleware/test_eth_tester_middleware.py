@@ -3,11 +3,11 @@ from unittest.mock import (
     Mock,
 )
 
-from web3.providers.eth_tester.middleware import (
+from newchain_web3.providers.eth_tester.middleware import (
     async_default_transaction_fields_middleware,
     default_transaction_fields_middleware,
 )
-from web3.types import (
+from newchain_web3.types import (
     BlockData,
 )
 

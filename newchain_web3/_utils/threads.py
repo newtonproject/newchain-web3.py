@@ -13,10 +13,10 @@ from typing import (
     Type,
 )
 
-from web3._utils.compat import (
+from newchain_web3._utils.compat import (
     Literal,
 )
-from web3.types import (
+from newchain_web3.types import (
     TReturn,
 )
 

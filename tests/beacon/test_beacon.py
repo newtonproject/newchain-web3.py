@@ -2,7 +2,7 @@ import pytest
 
 import requests
 
-from web3.beacon import (
+from newchain_web3.beacon import (
     Beacon,
 )
 

@@ -2,11 +2,11 @@ from typing import (
     Optional,
 )
 
-from web3 import Web3
-from web3._utils.rpc_abi import (
+from newchain_web3 import Web3
+from newchain_web3._utils.rpc_abi import (
     RPC,
 )
-from web3.types import (
+from newchain_web3.types import (
     TxParams,
     Wei,
 )

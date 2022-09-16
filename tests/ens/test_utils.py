@@ -11,10 +11,10 @@ from ens.utils import (
     init_async_web3,
     init_web3,
 )
-from web3.eth import (
+from newchain_web3.eth import (
     AsyncEth,
 )
-from web3.providers.eth_tester import (
+from newchain_web3.providers.eth_tester import (
     AsyncEthereumTesterProvider,
 )
 

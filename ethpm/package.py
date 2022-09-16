@@ -79,15 +79,15 @@ from ethpm.validation.package import (
 from ethpm.validation.uri import (
     validate_single_matching_uri,
 )
-from web3._utils.validation import (
+from newchain_web3._utils.validation import (
     validate_address,
 )
-from web3.eth import (
+from newchain_web3.eth import (
     Contract,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 class Package(object):

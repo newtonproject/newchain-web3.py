@@ -27,7 +27,7 @@ from ethpm.constants import (
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 def get_genesis_block_hash(w3: "Web3") -> HexBytes:

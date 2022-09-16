@@ -4,18 +4,18 @@ from eth_abi import (
     decode,
 )
 
-from web3._utils.module_testing.module_testing_utils import (
+from newchain_web3._utils.module_testing.module_testing_utils import (
     mock_offchain_lookup_request_response,
 )
-from web3._utils.module_testing.offchain_lookup_contract import (
+from newchain_web3._utils.module_testing.offchain_lookup_contract import (
     OFFCHAIN_LOOKUP_ABI,
     OFFCHAIN_LOOKUP_BYTECODE,
     OFFCHAIN_LOOKUP_BYTECODE_RUNTIME,
 )
-from web3._utils.type_conversion import (
+from newchain_web3._utils.type_conversion import (
     to_hex_if_bytes,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     OffchainLookup,
     TooManyRequests,
     ValidationError,

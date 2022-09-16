@@ -24,12 +24,12 @@ from ethpm import (
 from ethpm.uri import (
     create_latest_block_uri,
 )
-from web3.tools.pytest_ethereum._utils import (
+from newchain_web3.tools.pytest_ethereum._utils import (
     create_deployment_data,
     get_deployment_address,
     insert_deployment,
 )
-from web3.tools.pytest_ethereum.exceptions import (
+from newchain_web3.tools.pytest_ethereum.exceptions import (
     LinkerError,
 )
 

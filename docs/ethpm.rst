@@ -38,7 +38,7 @@ new ``Package`` class for a given package.
 .. doctest::
 
    >>> from ethpm import Package, get_ethpm_spec_dir
-   >>> from web3 import Web3
+   >>> from newchain_web3 import Web3
 
    >>> w3 = Web3(Web3.EthereumTesterProvider())
    >>> ethpm_spec_dir = get_ethpm_spec_dir()
@@ -92,7 +92,7 @@ LinkableContract
 .. doctest::
 
    >>> from eth_utils import is_address
-   >>> from web3 import Web3
+   >>> from newchain_web3 import Web3
    >>> from ethpm import Package, ASSETS_DIR
 
    >>> w3 = Web3(Web3.EthereumTesterProvider())
@@ -336,7 +336,7 @@ By default, the manifest builder returns a dict representing the manifest. To re
 .. doctest::
 
    >>> from ethpm import Package
-   >>> from web3 import Web3
+   >>> from newchain_web3 import Web3
 
    >>> w3 = Web3(Web3.EthereumTesterProvider())
    >>> built_package = build(

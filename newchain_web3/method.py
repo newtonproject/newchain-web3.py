@@ -25,23 +25,23 @@ from eth_utils.toolz import (
     pipe,
 )
 
-from web3._utils.method_formatters import (
+from newchain_web3._utils.method_formatters import (
     get_error_formatters,
     get_null_result_formatters,
     get_request_formatters,
     get_result_formatters,
 )
-from web3._utils.rpc_abi import (
+from newchain_web3._utils.rpc_abi import (
     RPC,
 )
-from web3.types import (
+from newchain_web3.types import (
     RPCEndpoint,
     TReturn,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
-    from web3.module import Module  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
+    from newchain_web3.module import Module  # noqa: F401
 
 
 Munger = Callable[..., Any]

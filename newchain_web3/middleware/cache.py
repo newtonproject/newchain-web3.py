@@ -20,11 +20,11 @@ import lru
 from newchain_web3._utils.caching import (
     generate_cache_key,
 )
-from web3._utils.compat import (
+from newchain_web3._utils.compat import (
     Literal,
     TypedDict,
 )
-from web3.types import (  # noqa: F401
+from newchain_web3.types import (  # noqa: F401
     BlockData,
     BlockNumber,
     Middleware,
@@ -33,7 +33,7 @@ from web3.types import (  # noqa: F401
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 SIMPLE_CACHE_RPC_WHITELIST = cast(
     Set[RPCEndpoint],

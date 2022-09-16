@@ -10,7 +10,7 @@ from eth_utils import (
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 class NetModuleTest:

@@ -11,11 +11,11 @@ from eth_utils.toolz import (
 from newchain_web3._utils.events import (
     get_event_data,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     LogTopicError,
     ValidationError,
 )
-from web3.logs import (
+from newchain_web3.logs import (
     DISCARD,
     IGNORE,
     STRICT,

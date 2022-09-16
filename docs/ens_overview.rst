@@ -54,7 +54,7 @@ The first time it's used, Web3.py will create the  ``ens`` instance using
 .. code-block:: python
 
     # instantiate w3 instance
-    from web3 import Web3, IPCProvider
+    from newchain_web3 import Web3, IPCProvider
     w3 = Web3(IPCProvider(...))
 
     # use the module

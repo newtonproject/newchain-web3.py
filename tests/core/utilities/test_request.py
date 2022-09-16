@@ -20,13 +20,13 @@ from requests.adapters import (
     HTTPAdapter,
 )
 
-from web3._utils import (
+from newchain_web3._utils import (
     request,
 )
-from web3._utils.caching import (
+from newchain_web3._utils.caching import (
     generate_cache_key,
 )
-from web3._utils.request import (
+from newchain_web3._utils.request import (
     SessionCache,
     cache_and_return_async_session,
     cache_and_return_session,

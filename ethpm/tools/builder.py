@@ -63,12 +63,12 @@ from ethpm.validation.manifest import (
 from ethpm.validation.package import (
     validate_package_name,
 )
-from web3._utils.validation import (
+from newchain_web3._utils.validation import (
     validate_address,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 def build(obj: Dict[str, Any], *fns: Callable[..., Any]) -> Dict[str, Any]:

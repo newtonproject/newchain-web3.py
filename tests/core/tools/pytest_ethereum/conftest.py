@@ -6,7 +6,7 @@ import pytest
 from ethpm import (
     get_ethpm_spec_dir,
 )
-from web3 import Web3
+from newchain_web3 import Web3
 
 PYTEST_ETH_TESTS_DIR = Path(__file__).parent
 

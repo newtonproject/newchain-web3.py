@@ -20,7 +20,7 @@ from geth.install import (
     install_geth,
 )
 
-from web3.tools.benchmark.utils import (
+from newchain_web3.tools.benchmark.utils import (
     kill_proc_gracefully,
 )
 

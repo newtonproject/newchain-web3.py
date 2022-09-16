@@ -12,15 +12,15 @@ from typing import (
     Union,
 )
 
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     ValidationError,
 )
-from web3.module import (
+from newchain_web3.module import (
     Module,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 def _validate_init_params_and_return_if_found(module_class: Any) -> List[str]:
@@ -59,7 +59,7 @@ def attach_modules(
         # None. Thus, set w3 to the parent_module. The import needs to happen locally
         # due to circular import issues.
         if w3 is None:
-            from web3 import Web3
+            from newchain_web3 import Web3
 
             if isinstance(parent_module, Web3):
                 w3 = parent_module

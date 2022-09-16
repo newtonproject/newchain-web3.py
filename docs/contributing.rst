@@ -380,7 +380,7 @@ virtualenv for smoke testing:
     # smoke test the release
     $ pip install ipython
     $ ipython
-    >>> from web3.auto import w3
+    >>> from newchain_web3.auto import w3
     >>> w3.is_connected()
     >>> ...
 

@@ -12,7 +12,7 @@ from eth_utils import (
     ValidationError,
 )
 
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     InfuraProjectIdNotFound,
 )
 

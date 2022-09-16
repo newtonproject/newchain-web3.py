@@ -50,7 +50,7 @@ from eth_utils.toolz import (
     valfilter,
 )
 
-import web3
+import newchain_web3
 # from newchain_web3._utils.encoding import (
 #     encode_single_packed,
 #     hexstr_if_str,
@@ -426,7 +426,7 @@ class EventFilterBuilder:
         return valfilter(lambda x: x is not None, params)
 
     def deploy(self, w3: "Web3") -> "LogFilter":
-        if not isinstance(w3, web3.Web3):
+        if not isinstance(w3, newchain_web3.Web3):
             raise ValueError(f"Invalid web3 argument: got: {w3!r}")
 
         for arg in AttributeDict.values(self.args):

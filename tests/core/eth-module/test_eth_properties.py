@@ -1,10 +1,10 @@
 import pytest
 
-from web3 import Web3
-from web3.eth import (
+from newchain_web3 import Web3
+from newchain_web3.eth import (
     AsyncEth,
 )
-from web3.providers.eth_tester.main import (
+from newchain_web3.providers.eth_tester.main import (
     AsyncEthereumTesterProvider,
 )
 

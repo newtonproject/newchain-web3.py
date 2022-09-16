@@ -225,7 +225,7 @@ The following properties are available on the ``web3.eth`` namespace.
 
        .. code-block:: python
 
-          >>> from web3.middleware import simple_cache_middleware
+          >>> from newchain_web3.middleware import simple_cache_middleware
           >>> w3.middleware_onion.add(simple_cache_middleware)
 
 
@@ -347,7 +347,7 @@ The following methods are available on the ``web3.eth`` namespace.
         from trie import (
             HexaryTrie,
         )
-        from web3._utils.encoding import (
+        from newchain_web3._utils.encoding import (
             pad_bytes,
         )
 

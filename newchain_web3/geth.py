@@ -16,7 +16,7 @@ from hexbytes.main import (
     HexBytes,
 )
 
-from web3._utils.admin import (
+from newchain_web3._utils.admin import (
     add_peer,
     datadir,
     node_info,
@@ -28,10 +28,10 @@ from web3._utils.admin import (
     stop_rpc,
     stop_ws,
 )
-from web3._utils.decorators import (
+from newchain_web3._utils.decorators import (
     deprecated_for,
 )
-from web3._utils.miner import (
+from newchain_web3._utils.miner import (
     make_dag,
     set_etherbase,
     set_extra,
@@ -41,7 +41,7 @@ from web3._utils.miner import (
     stop,
     stop_auto_dag,
 )
-from web3._utils.personal import (
+from newchain_web3._utils.personal import (
     ec_recover,
     import_raw_key,
     list_accounts,
@@ -53,15 +53,15 @@ from web3._utils.personal import (
     sign_typed_data,
     unlock_account,
 )
-from web3._utils.txpool import (
+from newchain_web3._utils.txpool import (
     content,
     inspect,
     status,
 )
-from web3.module import (
+from newchain_web3.module import (
     Module,
 )
-from web3.types import (
+from newchain_web3.types import (
     EnodeURI,
     GethWallet,
     NodeInfo,

@@ -1,10 +1,10 @@
 import json
 import pytest
 
-from web3 import (
+from newchain_web3 import (
     constants,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     ValidationError,
 )
 

@@ -313,7 +313,7 @@ Check Encodability
 
    .. code-block:: python
 
-        >>> from web3.auto.gethdev import w3
+        >>> from newchain_web3.auto.gethdev import w3
         >>> w3.is_encodable('bytes2', b'12')
         True
         >>> w3.is_encodable('bytes2', b'1')
@@ -329,7 +329,7 @@ Check Encodability
 
     .. doctest::
 
-        >>> from web3.auto.gethdev import w3
+        >>> from newchain_web3.auto.gethdev import w3
         >>> w3.enable_strict_bytes_type_checking()
         >>> w3.is_encodable('bytes2', b'12')
         True
@@ -414,7 +414,7 @@ keyword argument:
 
 .. code-block:: python
 
-    >>> from web3 import Web3, HTTPProvider
+    >>> from newchain_web3 import Web3, HTTPProvider
     >>> from external_module_library import (
     ...     ModuleClass1,
     ...     ModuleClass2,
@@ -455,7 +455,7 @@ keyword argument:
 
     .. code-block:: python
 
-        >>> from web3 import Web3, HTTPProvider
+        >>> from newchain_web3 import Web3, HTTPProvider
         >>> from external_module_library import (
         ...     ModuleClass1,
         ...     ModuleClass2,

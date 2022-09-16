@@ -18,15 +18,15 @@ from eth_utils import (
     to_dict,
 )
 
-from web3._utils.http import (
+from newchain_web3._utils.http import (
     construct_user_agent,
 )
-from web3._utils.request import (
+from newchain_web3._utils.request import (
     async_make_post_request,
     cache_and_return_async_session as _cache_and_return_async_session,
     get_default_http_endpoint,
 )
-from web3.types import (
+from newchain_web3.types import (
     RPCEndpoint,
     RPCResponse,
 )

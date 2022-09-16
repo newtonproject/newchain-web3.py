@@ -42,13 +42,13 @@ from eth_utils.toolz import (
     excepts,
 )
 
-from web3._utils.method_formatters import (
+from newchain_web3._utils.method_formatters import (
     OFFCHAIN_LOOKUP_FIELDS,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     OffchainLookup,
 )
-from web3.types import (
+from newchain_web3.types import (
     LogReceipt,
     RPCResponse,
     TParams,

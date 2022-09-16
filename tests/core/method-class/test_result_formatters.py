@@ -4,17 +4,17 @@ from eth_utils.toolz import (
     compose,
 )
 
-from web3 import Web3
-from web3.method import (
+from newchain_web3 import Web3
+from newchain_web3.method import (
     Method,
 )
-from web3.middleware.fixture import (
+from newchain_web3.middleware.fixture import (
     construct_result_generator_middleware,
 )
-from web3.module import (
+from newchain_web3.module import (
     Module,
 )
-from web3.providers import (
+from newchain_web3.providers import (
     BaseProvider,
 )
 

@@ -25,7 +25,7 @@ from ethpm.exceptions import (
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 def get_linked_deployments(deployments: Dict[str, Any]) -> Dict[str, Any]:

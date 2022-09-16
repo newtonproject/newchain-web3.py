@@ -1,4 +1,4 @@
-from web3._utils.compat import (
+from newchain_web3._utils.compat import (
     Literal,
 )
 

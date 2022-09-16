@@ -11,12 +11,12 @@ from eth_utils.toolz import (
 from ethpm.uri import (
     create_latest_block_uri,
 )
-from web3.tools.pytest_ethereum._utils import (
+from newchain_web3.tools.pytest_ethereum._utils import (
     contains_matching_uri,
     insert_deployment,
     pluck_matching_uri,
 )
-from web3.tools.pytest_ethereum.exceptions import (
+from newchain_web3.tools.pytest_ethereum.exceptions import (
     LinkerError,
 )
 

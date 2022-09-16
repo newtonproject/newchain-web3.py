@@ -8,7 +8,7 @@ import requests
 from ens.utils import (
     ens_encode_name,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     OffchainLookup,
     ValidationError,
 )

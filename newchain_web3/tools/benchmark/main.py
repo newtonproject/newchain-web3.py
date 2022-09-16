@@ -17,34 +17,34 @@ from eth_typing import (
     ChecksumAddress,
 )
 
-from web3 import (
+from newchain_web3 import (
     AsyncHTTPProvider,
     HTTPProvider,
     Web3,
 )
-from web3.eth import (
+from newchain_web3.eth import (
     AsyncEth,
     Eth,
 )
-from web3.middleware import (
+from newchain_web3.middleware import (
     async_buffered_gas_estimate_middleware,
     async_gas_price_strategy_middleware,
     buffered_gas_estimate_middleware,
     gas_price_strategy_middleware,
 )
-from web3.tools.benchmark.node import (
+from newchain_web3.tools.benchmark.node import (
     GethBenchmarkFixture,
 )
-from web3.tools.benchmark.reporting import (
+from newchain_web3.tools.benchmark.reporting import (
     print_entry,
     print_footer,
     print_header,
 )
-from web3.tools.benchmark.utils import (
+from newchain_web3.tools.benchmark.utils import (
     wait_for_aiohttp,
     wait_for_http,
 )
-from web3.types import (
+from newchain_web3.types import (
     Wei,
 )
 

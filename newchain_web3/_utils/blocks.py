@@ -14,7 +14,7 @@ from eth_utils.toolz import (
     curry,
 )
 
-from web3.types import (
+from newchain_web3.types import (
     RPCEndpoint,
 )
 

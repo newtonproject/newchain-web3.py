@@ -75,7 +75,7 @@ from newchain_web3.types import (
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 def extract_argument_types(*args: Sequence[Any]) -> str:

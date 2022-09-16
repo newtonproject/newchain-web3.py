@@ -250,7 +250,7 @@ HTTPProvider
 
     .. code-block:: python
 
-        >>> from web3 import Web3
+        >>> from newchain_web3 import Web3
         >>> adapter = requests.adapters.HTTPAdapter(pool_connections=20, pool_maxsize=20)
         >>> session = requests.Session()
         >>> session.mount('http://', adapter)
@@ -295,7 +295,7 @@ IPCProvider
 WebsocketProvider
 ~~~~~~~~~~~~~~~~~
 
-.. py:class:: web3.providers.websocket.WebsocketProvider(endpoint_uri[, websocket_timeout, websocket_kwargs])
+.. py:class:: newchain_web3.providers.websocket.WebsocketProvider(endpoint_uri[, websocket_timeout, websocket_kwargs])
 
     This provider handles interactions with an WS or WSS based JSON-RPC server.
 
@@ -327,7 +327,7 @@ WebsocketProvider
         >>> from newchain_web3 import Web3
         >>> w3 = Web3(Web3.WebsocketProvider("ws://127.0.0.1:8546", websocket_timeout=60))
 
-.. py:currentmodule:: web3.providers.eth_tester
+.. py:currentmodule:: newchain_web3.providers.eth_tester
 
 EthereumTesterProvider
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -369,7 +369,7 @@ AsyncHTTPProvider
 .. warning:: This provider is unstable and there are still gaps in
     functionality. However, it is being actively developed.
 
-.. py:class:: web3.providers.async_rpc.AsyncHTTPProvider(endpoint_uri[, request_kwargs])
+.. py:class:: newchain_web3.providers.async_rpc.AsyncHTTPProvider(endpoint_uri[, request_kwargs])
 
     This provider handles interactions with an HTTP or HTTPS based JSON-RPC server asynchronously.
 
@@ -384,10 +384,10 @@ AsyncHTTPProvider
     .. code-block:: python
 
         >>> from aiohttp import ClientSession
-        >>> from web3 import Web3, AsyncHTTPProvider
-        >>> from web3.eth import AsyncEth
-        >>> from web3.net import AsyncNet
-        >>> from web3.geth import Geth, AsyncGethTxPool
+        >>> from newchain_web3 import Web3, AsyncHTTPProvider
+        >>> from newchain_web3.eth import AsyncEth
+        >>> from newchain_web3.net import AsyncNet
+        >>> from newchain_web3.geth import Geth, AsyncGethTxPool
 
         >>> w3 = Web3(
         ...     AsyncHTTPProvider(endpoint_uri),

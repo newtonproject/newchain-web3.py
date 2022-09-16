@@ -2,13 +2,13 @@ from typing import (
     TYPE_CHECKING,
 )
 
-from web3.types import (
+from newchain_web3.types import (
     FeeHistory,
     Wei,
 )
 
 if TYPE_CHECKING:
-    from web3.eth import (
+    from newchain_web3.eth import (
         AsyncEth,  # noqa: F401
         Eth,  # noqa: F401
     )

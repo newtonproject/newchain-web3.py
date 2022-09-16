@@ -19,7 +19,7 @@ from newchain_web3._utils.encoding import (
 from newchain_web3.middleware import (
     combine_middlewares,
 )
-from web3.types import (
+from newchain_web3.types import (
     Middleware,
     MiddlewareOnion,
     RPCEndpoint,
@@ -27,7 +27,7 @@ from web3.types import (
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 class BaseProvider:

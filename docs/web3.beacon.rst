@@ -9,7 +9,7 @@ Once you have a running beacon node, import and configure your beacon instance:
 
 .. code-block:: python
 
-    >>> from web3.beacon import Beacon
+    >>> from newchain_web3.beacon import Beacon
     >>> beacon = Beacon("http://localhost:5051")
 
 Methods

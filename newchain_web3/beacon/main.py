@@ -5,7 +5,7 @@ from typing import (
 
 import requests
 
-from web3.module import (
+from newchain_web3.module import (
     Module,
 )
 

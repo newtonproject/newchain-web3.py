@@ -8,20 +8,20 @@ from eth_utils.toolz import (
     assoc,
 )
 
-from web3._utils.async_transactions import (
+from newchain_web3._utils.async_transactions import (
     get_buffered_gas_estimate as async_get_buffered_gas_estimate,
 )
-from web3._utils.transactions import (
+from newchain_web3._utils.transactions import (
     get_buffered_gas_estimate,
 )
-from web3.types import (
+from newchain_web3.types import (
     AsyncMiddleware,
     RPCEndpoint,
     RPCResponse,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 def buffered_gas_estimate_middleware(

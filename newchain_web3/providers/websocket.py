@@ -31,7 +31,7 @@ from newchain_web3.exceptions import (
 from newchain_web3.providers.base import (
     JSONBaseProvider,
 )
-from web3.types import (
+from newchain_web3.types import (
     RPCEndpoint,
     RPCResponse,
 )

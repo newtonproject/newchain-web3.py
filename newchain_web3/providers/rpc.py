@@ -29,7 +29,7 @@ from newchain_web3.datastructures import (
 from newchain_web3.middleware import (
     http_retry_request_middleware,
 )
-from web3.types import (
+from newchain_web3.types import (
     Middleware,
     RPCEndpoint,
     RPCResponse,
@@ -41,7 +41,7 @@ from .base import (
 
 
 class HTTPProvider(JSONBaseProvider):
-    logger = logging.getLogger("web3.providers.HTTPProvider")
+    logger = logging.getLogger("newchain_web3.providers.HTTPProvider")
     endpoint_uri = None
     _request_args = None
     _request_kwargs = None

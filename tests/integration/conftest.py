@@ -9,11 +9,11 @@ from newchain_web3._utils.module_testing.math_contract import (
     MATH_ABI,
     MATH_BYTECODE,
 )
-from web3._utils.module_testing.offchain_lookup_contract import (
+from newchain_web3._utils.module_testing.offchain_lookup_contract import (
     OFFCHAIN_LOOKUP_ABI,
     OFFCHAIN_LOOKUP_BYTECODE,
 )
-from web3._utils.module_testing.revert_contract import (
+from newchain_web3._utils.module_testing.revert_contract import (
     _REVERT_CONTRACT_ABI,
     REVERT_CONTRACT_BYTECODE,
 )

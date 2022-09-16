@@ -22,20 +22,20 @@ from hexbytes import (
     HexBytes,
 )
 
-from web3._utils.compat import (
+from newchain_web3._utils.compat import (
     Literal,
 )
-from web3._utils.request import (
+from newchain_web3._utils.request import (
     cache_and_return_async_session,
     cache_and_return_session,
 )
-from web3.types import (
+from newchain_web3.types import (
     BlockData,
     LogReceipt,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
     from _pytest.monkeypatch import MonkeyPatch  # noqa: F401
     from requests import Response  # noqa: F401
     from aiohttp import ClientResponse  # noqa: F401

@@ -14,13 +14,13 @@ from eth_utils import (
     to_text,
 )
 
-from web3._utils.encoding import (
+from newchain_web3._utils.encoding import (
     FriendlyJsonSerde,
 )
-from web3.middleware import (
+from newchain_web3.middleware import (
     async_combine_middlewares,
 )
-from web3.types import (
+from newchain_web3.types import (
     Middleware,
     MiddlewareOnion,
     RPCEndpoint,
@@ -28,7 +28,7 @@ from web3.types import (
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 class AsyncBaseProvider:

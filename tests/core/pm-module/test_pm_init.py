@@ -11,7 +11,7 @@ from ethpm.tools import (
     get_ethpm_local_manifest,
     get_ethpm_spec_manifest,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     PMError,
 )
 

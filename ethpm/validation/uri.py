@@ -37,7 +37,7 @@ from ethpm.validation.package import (
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 def validate_ipfs_uri(uri: str) -> None:

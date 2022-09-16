@@ -62,15 +62,15 @@ from ens.utils import (
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
-    from web3.contract import (  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
+    from newchain_web3.contract import (  # noqa: F401
         AsyncContract,
     )
-    from web3.providers import (  # noqa: F401
+    from newchain_web3.providers import (  # noqa: F401
         AsyncBaseProvider,
         BaseProvider,
     )
-    from web3.types import (  # noqa: F401
+    from newchain_web3.types import (  # noqa: F401
         Middleware,
         TxParams,
     )

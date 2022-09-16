@@ -1,16 +1,16 @@
 import pytest
 
-from web3._utils.method_formatters import (
+from newchain_web3._utils.method_formatters import (
     get_error_formatters,
     raise_solidity_error_on_revert,
 )
-from web3._utils.rpc_abi import (
+from newchain_web3._utils.rpc_abi import (
     RPC,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     ContractLogicError,
 )
-from web3.types import (
+from newchain_web3.types import (
     RPCResponse,
 )
 

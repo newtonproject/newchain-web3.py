@@ -5,7 +5,7 @@ from typing import (
     Dict,
 )
 
-from web3.types import (
+from newchain_web3.types import (
     AsyncMiddleware,
     Middleware,
     RPCEndpoint,
@@ -13,7 +13,7 @@ from web3.types import (
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 def construct_fixture_middleware(fixtures: Dict[RPCEndpoint, Any]) -> Middleware:

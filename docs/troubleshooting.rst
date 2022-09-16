@@ -51,7 +51,7 @@ Ethereum network. An example configuration, if you're connecting to a locally ru
 
 .. code-block:: python
 
-    >>> from web3 import Web3
+    >>> from newchain_web3 import Web3
     >>> w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
 
     # now `w3` is available to use:
@@ -159,8 +159,8 @@ Your Ethereum node JSON-RPC API might be slow when fetching multiple and large r
 
     import ujson
 
-    from web3.providers import JSONBaseProvider
-    from web3.types import RPCResponse
+    from newchain_web3.providers import JSONBaseProvider
+    from newchain_web3.types import RPCResponse
 
 
     def _fast_decode_rpc_response(raw_response: bytes) -> RPCResponse:

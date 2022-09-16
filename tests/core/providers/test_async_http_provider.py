@@ -4,10 +4,10 @@ from aiohttp import (
     ClientSession,
 )
 
-from web3._utils import (
+from newchain_web3._utils import (
     request,
 )
-from web3.providers.async_rpc import (
+from newchain_web3.providers.async_rpc import (
     AsyncHTTPProvider,
 )
 

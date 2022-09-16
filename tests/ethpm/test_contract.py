@@ -14,7 +14,7 @@ from ethpm.contract import (
 from ethpm.exceptions import (
     BytecodeLinkingError,
 )
-from web3.contract import (
+from newchain_web3.contract import (
     Contract,
 )
 

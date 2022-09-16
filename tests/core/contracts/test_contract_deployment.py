@@ -4,7 +4,7 @@ from eth_utils import (
     decode_hex,
 )
 
-from web3 import (
+from newchain_web3 import (
     constants,
 )
 

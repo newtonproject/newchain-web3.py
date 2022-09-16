@@ -76,10 +76,10 @@ Example ``account_test_script.py``
 .. code-block:: python
 
     import os 
-    from eth_account import Account
-    from eth_account.signers.local import LocalAccount
-    from web3.auto import w3
-    from web3.middleware import construct_sign_and_send_raw_middleware
+    from newchain_account import Account
+    from newchain_account.signers.local import LocalAccount
+    from newchain_web3.auto import w3
+    from newchain_web3.middleware import construct_sign_and_send_raw_middleware
     
     private_key = os.environ.get("PRIVATE_KEY")
     assert private_key is not None, "You must set PRIVATE_KEY environment variable"
@@ -90,7 +90,7 @@ Example ``account_test_script.py``
     
     print(f"Your hot wallet address is {account.address}")
     
-    # Now you can use web3.eth.send_transaction(), Contract.functions.xxx.transact() functions 
+    # Now you can use newchain_web3.eth.send_transaction(), Contract.functions.xxx.transact() functions 
     # with your local private key through middleware and you no longer get the error 
     # "ValueError: The method eth_sendTransaction does not exist/is not available
     
@@ -100,7 +100,7 @@ Example how to run this in UNIX shell:
  
     # Generate a new 256-bit random integer using openssl UNIX command that acts as a private key.
     # You can also do:
-    # python -c "from web3 import Web3; w3 = Web3(); acc = w3.eth.account.create(); print(f'private key={w3.toHex(acc.key)}, account={acc.address}')"
+    # python -c "from newchain_web3 import Web3; w3 = Web3(); acc = w3.eth.account.create(); print(f'private key={w3.toHex(acc.key)}, account={acc.address}')"
     # Store this in a safe place, like in your password manager.
     export PRIVATE_KEY=0x`openssl rand -hex 32` 
     

@@ -26,7 +26,7 @@ from newchain_web3._utils.module_testing.emitter_contract import (
 from newchain_web3.providers.eth_tester import (
     EthereumTesterProvider,
 )
-from web3.types import (  # noqa: F401
+from newchain_web3.types import (  # noqa: F401
     BlockData,
 )
 

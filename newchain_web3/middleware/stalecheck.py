@@ -11,7 +11,7 @@ from typing import (  # noqa: F401
 from newchain_web3.exceptions import (
     StaleBlockchain,
 )
-from web3.types import (
+from newchain_web3.types import (
     AsyncMiddleware,
     BlockData,
     Middleware,
@@ -20,7 +20,7 @@ from web3.types import (
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 SKIP_STALECHECK_FOR_METHODS = ("eth_getBlockByNumber",)
 

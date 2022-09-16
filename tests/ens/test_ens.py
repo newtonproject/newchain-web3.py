@@ -4,7 +4,7 @@ from ens import (
     ENS,
     AsyncENS,
 )
-from web3.middleware import (
+from newchain_web3.middleware import (
     async_validation_middleware,
     pythonic_middleware,
 )

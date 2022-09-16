@@ -422,9 +422,9 @@ it as a ``Package`` instance.
 
 .. code-block:: python3
 
-    from web3.auto.infura import w3
+    from newchain_web3.auto.infura import w3
 
-    # Note. To use the web3.pm module, you will need to instantiate your w3 instance
+    # Note. To use the newchain_web3.pm module, you will need to instantiate your w3 instance
     # with a web3 provider connected to the chain on which your registry lives.
 
     # The ethPM module is still experimental and subject to change,
@@ -471,7 +471,7 @@ within an ethPM package.
     # connected to your provider of choice. Now your factories will automatically
     # deploy to this new chain, and the deployments available on a package will
     # be automatically filtered to those located on the new chain.
-    from web3.auto.infura.goerli import w3 as goerli_w3
+    from newchain_web3.auto.infura.goerli import w3 as goerli_w3
     goerli_registrar = ens_package.update_w3(goerli_w3)
 
 
@@ -644,8 +644,8 @@ appropriately in the following way:
 
 .. code-block:: python
 
-    from web3 import Web3, WebsocketProvider
-    from web3.utils import handle_offchain_lookup
+    from newchain_web3 import Web3, WebsocketProvider
+    from newchain_web3.utils import handle_offchain_lookup
 
     w3 = Web3(WebsocketProvider(...))
 
@@ -690,7 +690,7 @@ Import your required libraries
 
 .. code-block:: python
 
-    from web3 import Web3, HTTPProvider
+    from newchain_web3 import Web3, HTTPProvider
 
 Initialize a web3 instance with an Infura node
 
@@ -703,7 +703,7 @@ Inject the middleware into the middleware onion
 
 .. code-block:: python
 
-    from web3.middleware import geth_poa_middleware
+    from newchain_web3.middleware import geth_poa_middleware
     w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
 Just remember that you have to sign all transactions locally, as infura does not handle any keys from your wallet ( refer to `this`_  )
@@ -831,16 +831,16 @@ The script can be run with: ``python ./eventscanner.py <your JSON-RPC API URL>``
     from abc import ABC, abstractmethod
     from typing import Tuple, Optional, Callable, List, Iterable, Dict, Any
 
-    from web3 import Web3
-    from web3.contract import Contract
-    from web3.datastructures import AttributeDict
-    from web3.exceptions import BlockNotFound
+    from newchain_web3 import Web3
+    from newchain_web3.contract import Contract
+    from newchain_web3.datastructures import AttributeDict
+    from newchain_web3.exceptions import BlockNotFound
     from eth_abi.codec import ABICodec
 
     # Currently this method is not exposed over official web3 API,
     # but we need it to construct eth_getLogs parameters
-    from web3._utils.filters import construct_event_filter_params
-    from web3._utils.events import get_event_data
+    from newchain_web3._utils.filters import construct_event_filter_params
+    from newchain_web3._utils.events import get_event_data
 
 
     logger = logging.getLogger(__name__)
@@ -1237,7 +1237,7 @@ The script can be run with: ``python ./eventscanner.py <your JSON-RPC API URL>``
         # The resulting JSON state file is 2.9 MB.
         import sys
         import json
-        from web3.providers.rpc import HTTPProvider
+        from newchain_web3.providers.rpc import HTTPProvider
 
         # We use tqdm library to render a nice progress bar in the console
         # https://pypi.org/project/tqdm/
