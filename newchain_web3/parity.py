@@ -1,86 +1,215 @@
+from typing import (
+    Callable,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
+import warnings
+
+from eth_typing import (
+    Address,
+    ChecksumAddress,
+    Hash32,
+    HexStr,
+)
 from eth_utils import (
     is_checksum_address,
 )
-
-from newchain_web3._utils.toolz import (
+from eth_utils.toolz import (
     assoc,
+)
+# from newchain_web3._utils.toolz import (
+#     assoc,
+# )
+
+from newchain_web3._utils.personal import (
+    ec_recover,
+    import_raw_key,
+    list_accounts,
+    new_account,
+    send_transaction,
+    sign,
+    sign_typed_data,
+    unlock_account,
+)
+from newchain_web3._utils.rpc_abi import (
+    RPC,
+)
+from newchain_web3.method import (
+    Method,
+    default_root_munger,
 )
 from newchain_web3.module import (
     Module,
 )
+from newchain_web3.types import (
+    ENS,
+    BlockIdentifier,
+    EnodeURI,
+    ParityBlockTrace,
+    ParityFilterParams,
+    ParityFilterTrace,
+    ParityMode,
+    ParityNetPeers,
+    ParityTraceMode,
+    TxParams,
+    _Hash32,
+)
+
+
+class ParityPersonal(Module):
+    """
+    https://wiki.parity.io/JSONRPC-personal-module
+    """
+
+    ec_recover = ec_recover
+    import_raw_key = import_raw_key
+    list_accounts = list_accounts
+    new_account = new_account
+    send_transaction = send_transaction
+    sign = sign
+    sign_typed_data = sign_typed_data
+    unlock_account = unlock_account
 
 
 class Parity(Module):
     """
     https://paritytech.github.io/wiki/JSONRPC-parity-module
     """
-    defaultBlock = "latest"
 
-    def enode(self):
-        return self.web3.manager.request_blocking(
-            "parity_enode",
-            [],
+    _default_block: BlockIdentifier = "latest"
+    personal: ParityPersonal
+
+    enode: Method[Callable[[], str]] = Method(
+        RPC.parity_enode,
+        is_property=True,
+    )
+
+    """ property default_block """
+
+    @property
+    def default_block(self) -> BlockIdentifier:
+        return self._default_block
+
+    @default_block.setter
+    def default_block(self, value: BlockIdentifier) -> None:
+        self._default_block = value
+
+    @property
+    def defaultBlock(self) -> BlockIdentifier:
+        warnings.warn(
+            "defaultBlock is deprecated in favor of default_block",
+            category=DeprecationWarning,
         )
+        return self._default_block
 
-    def listStorageKeys(self, address, quantity, hash_, block_identifier=None):
+    @defaultBlock.setter
+    def defaultBlock(self, value: BlockIdentifier) -> None:
+        warnings.warn(
+            "defaultBlock is deprecated in favor of default_block",
+            category=DeprecationWarning,
+        )
+        self._default_block = value
+
+    def list_storage_keys_munger(
+        self,
+        address: Union[Address, ChecksumAddress, ENS, Hash32],
+        quantity: int,
+        hash_: Hash32,
+        block_identifier: Optional[BlockIdentifier] = None,
+    ) -> Tuple[
+        Union[Address, ChecksumAddress, ENS, Hash32], int, Hash32, BlockIdentifier
+    ]:
         if block_identifier is None:
-            block_identifier = self.defaultBlock
-        return self.web3.manager.request_blocking(
-            "parity_listStorageKeys",
-            [address, quantity, hash_, block_identifier],
-        )
+            block_identifier = self.default_block
+        return (address, quantity, hash_, block_identifier)
 
-    def netPeers(self):
-        return self.web3.manager.request_blocking(
-            "parity_netPeers",
-            [],
-        )
+    list_storage_keys: Method[Callable[..., List[Hash32]]] = Method(
+        RPC.parity_listStorageKeys,
+        mungers=[list_storage_keys_munger],
+    )
 
-    def traceReplayTransaction(self, transaction_hash, mode=['trace']):
-        return self.web3.manager.request_blocking(
-            "trace_replayTransaction",
-            [transaction_hash, mode],
-        )
+    net_peers: Method[Callable[[], ParityNetPeers]] = Method(
+        RPC.parity_netPeers, is_property=True
+    )
 
-    def traceReplayBlockTransactions(self, block_identifier, mode=['trace']):
-        return self.web3.manager.request_blocking(
-            "trace_replayBlockTransactions",
-            [block_identifier, mode]
-        )
+    add_reserved_peer: Method[Callable[[EnodeURI], bool]] = Method(
+        RPC.parity_addReservedPeer,
+        mungers=[default_root_munger],
+    )
 
-    def traceBlock(self, block_identifier):
-        return self.web3.manager.request_blocking(
-            "trace_block",
-            [block_identifier]
-        )
+    def trace_replay_transaction_munger(
+        self,
+        block_identifier: Union[_Hash32, BlockIdentifier],
+        mode: ParityTraceMode = ["trace"],
+    ) -> Tuple[Union[BlockIdentifier, _Hash32], ParityTraceMode]:
+        return (block_identifier, mode)
 
-    def traceFilter(self, params):
-        return self.web3.manager.request_blocking(
-            "trace_filter",
-            [params]
-        )
+    trace_replay_transaction: Method[Callable[..., ParityBlockTrace]] = Method(
+        RPC.trace_replayTransaction,
+        mungers=[trace_replay_transaction_munger],
+    )
 
-    def traceTransaction(self, transaction_hash):
-        return self.web3.manager.request_blocking(
-            "trace_transaction",
-            [transaction_hash]
-        )
+    trace_replay_block_transactions: Method[
+        Callable[..., List[ParityBlockTrace]]
+    ] = Method(
+        RPC.trace_replayBlockTransactions, mungers=[trace_replay_transaction_munger]
+    )
 
-    def traceCall(self, transaction, mode=['trace'], block_identifier=None):
+    trace_block: Method[Callable[[BlockIdentifier], List[ParityBlockTrace]]] = Method(
+        RPC.trace_block,
+        mungers=[default_root_munger],
+    )
+
+    trace_filter: Method[
+        Callable[[ParityFilterParams], List[ParityFilterTrace]]
+    ] = Method(
+        RPC.trace_filter,
+        mungers=[default_root_munger],
+    )
+
+    trace_transaction: Method[Callable[[_Hash32], List[ParityFilterTrace]]] = Method(
+        RPC.trace_transaction,
+        mungers=[default_root_munger],
+    )
+
+    def trace_call_munger(
+        self,
+        transaction: TxParams,
+        mode: ParityTraceMode = ["trace"],
+        block_identifier: Optional[BlockIdentifier] = None,
+    ) -> Tuple[TxParams, ParityTraceMode, BlockIdentifier]:
         # TODO: move to middleware
-        if 'from' not in transaction and is_checksum_address(self.defaultAccount):
-            transaction = assoc(transaction, 'from', self.defaultAccount)
+        if "from" not in transaction and is_checksum_address(
+            self.w3.eth.default_account
+        ):
+            transaction = assoc(transaction, "from", self.w3.eth.default_account)
 
         # TODO: move to middleware
         if block_identifier is None:
-            block_identifier = self.defaultBlock
-        return self.web3.manager.request_blocking(
-            "trace_call",
-            [transaction, mode, block_identifier],
-        )
+            block_identifier = self.default_block
 
-    def traceRawTransaction(self, raw_transaction, mode=['trace']):
-        return self.web3.manager.request_blocking(
-            "trace_rawTransaction",
-            [raw_transaction, mode],
-        )
+        return (transaction, mode, block_identifier)
+
+    trace_call: Method[Callable[..., ParityBlockTrace]] = Method(
+        RPC.trace_call,
+        mungers=[trace_call_munger],
+    )
+
+    def trace_transactions_munger(
+        self, raw_transaction: HexStr, mode: ParityTraceMode = ["trace"]
+    ) -> Tuple[HexStr, ParityTraceMode]:
+        return (raw_transaction, mode)
+
+    trace_raw_transaction: Method[Callable[..., ParityBlockTrace]] = Method(
+        RPC.trace_rawTransaction,
+        mungers=[trace_transactions_munger],
+    )
+
+    set_mode: Method[Callable[[ParityMode], bool]] = Method(
+        RPC.parity_setMode,
+        mungers=[default_root_munger],
+    )
+
+    mode: Method[Callable[[], ParityMode]] = Method(RPC.parity_mode, is_property=True)

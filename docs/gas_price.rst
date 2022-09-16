@@ -3,24 +3,27 @@
 Gas Price API
 ===============
 
-For Ethereum transactions, gas price is a delicate property. For this reason,
+.. warning::
+    Gas price strategy is only supported for legacy transactions. The London fork
+    introduced ``maxFeePerGas`` and ``maxPriorityFeePerGas`` transaction parameters
+    which should be used over ``gasPrice`` whenever possible.
+
+For Ethereum (legacy) transactions, gas price is a delicate property. For this reason,
 Web3 includes an API for configuring it.
 
-By default, Web3 will not include a ``gasPrice`` in the transaction as to relay
-this responsibility to the connected node. The Gas Price API allows you to
-define Web3's behaviour for populating the gas price. This is done using a
-"Gas Price Strategy" - a method which takes the Web3 object and a transaction
-dictionary and returns a gas price (denominated in wei).
+The Gas Price API allows you to define Web3's behaviour for populating the gas price.
+This is done using a "Gas Price Strategy" - a method which takes the Web3 object and a
+transaction dictionary and returns a gas price (denominated in wei).
 
 Retrieving gas price
 --------------------
 
-To retreive the gas price using the selected strategy simply call
-:meth:`~web3.eth.Eth.generateGasPrice`
+To retrieve the gas price using the selected strategy simply call
+:meth:`~web3.eth.Eth.generate_gas_price`
 
 .. code-block:: python
 
-    >>> Web3.eth.generateGasPrice()
+    >>> web3.eth.generate_gas_price()
     20000000000
 
 Creating a gas price strategy
@@ -53,7 +56,7 @@ returns a higher gas price when the value of the transaction is higher than
 Selecting the gas price strategy
 --------------------------------
 
-The gas price strategy can be set by calling :meth:`~web3.eth.Eth.setGasPriceStrategy`.
+The gas price strategy can be set by calling :meth:`~web3.eth.Eth.set_gas_price_strategy`.
 
 .. code-block:: python
 
@@ -63,7 +66,7 @@ The gas price strategy can be set by calling :meth:`~web3.eth.Eth.setGasPriceStr
         ...
 
     w3 = Web3(...)
-    w3.eth.setGasPriceStrategy(value_based_gas_price_strategy)
+    w3.eth.set_gas_price_strategy(value_based_gas_price_strategy)
 
 Available gas price strategies
 ------------------------------
@@ -78,13 +81,14 @@ Available gas price strategies
 
 .. py:module:: web3.gas_strategies.time_based
 
-.. py:method:: construct_time_based_gas_price_strategy(max_wait_seconds, sample_size, probability)
+.. py:method:: construct_time_based_gas_price_strategy(max_wait_seconds, sample_size=120, probability=98, weighted=False)
 
     Constructs a strategy which will compute a gas price such that the
     transaction will be mined within a number of seconds defined by
     ``max_wait_seconds`` with a probability defined by ``probability``.  The
     gas price is computed by sampling ``sample_size`` of the most recently
-    mined blocks.
+    mined blocks. If ``weighted=True``, the block time will be weighted towards
+    more recently mined blocks.
 
     * ``max_wait_seconds`` The desired maxiumum number of seconds the
       transaction should take to mine.
@@ -110,7 +114,7 @@ Available gas price strategies
         from newchain_web3.gas_strategies.time_based import medium_gas_price_strategy
 
         w3 = Web3()
-        w3.eth.setGasPriceStrategy(medium_gas_price_strategy)
+        w3.eth.set_gas_price_strategy(medium_gas_price_strategy)
 
         w3.middleware_onion.add(middleware.time_based_cache_middleware)
         w3.middleware_onion.add(middleware.latest_block_based_cache_middleware)

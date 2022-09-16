@@ -4,65 +4,65 @@ from eth_utils import (
     is_address,
     to_checksum_address,
 )
+
 from ethpm import (
     Package,
 )
 from ethpm.contract import (
     LinkableContract,
 )
-
 from newchain_web3 import Web3
 from newchain_web3.exceptions import (
     PMError,
 )
 from newchain_web3.pm import (
-    ERCRegistry,
-    VyperReferenceRegistry,
-    get_vyper_registry_manifest,
+    SimpleRegistry,
+    get_simple_registry_manifest,
 )
 
 
 @pytest.fixture
 def fresh_w3():
     w3 = Web3(Web3.EthereumTesterProvider())
-    w3.eth.defaultAccount = w3.eth.accounts[0]
+    w3.eth.default_account = w3.eth.accounts[0]
     w3.eth.defaultContractFactory = LinkableContract
     w3.enable_unstable_package_management_api()
     return w3
 
 
 def test_pm_get_package_from_manifest(w3):
-    manifest = get_vyper_registry_manifest()
+    manifest = get_simple_registry_manifest()
     package = w3.pm.get_package_from_manifest(manifest)
     assert isinstance(package, Package)
-    assert package.name == "vyper-registry"
+    assert package.name == "simple-registry"
 
 
 def test_pm_deploy_and_set_registry(fresh_w3):
     assert not hasattr(fresh_w3.pm, "registry")
     registry_address = fresh_w3.pm.deploy_and_set_registry()
-    assert isinstance(fresh_w3.pm.registry, VyperReferenceRegistry)
+    assert isinstance(fresh_w3.pm.registry, SimpleRegistry)
     assert is_address(registry_address)
 
 
-def test_pm_set_registry_with_vyper_default(empty_vy_registry, fresh_w3):
+def test_pm_set_registry(empty_sol_registry, fresh_w3):
     assert not hasattr(fresh_w3.pm, "registry")
-    fresh_w3.pm.set_registry(address=to_checksum_address(empty_vy_registry.address))
-    assert isinstance(fresh_w3.pm.registry, ERCRegistry)
+    fresh_w3.pm.set_registry(address=to_checksum_address(empty_sol_registry.address))
+    assert isinstance(fresh_w3.pm.registry, SimpleRegistry)
     assert is_address(fresh_w3.pm.registry.address)
 
 
-def test_pm_set_solidity_registry(empty_sol_registry, fresh_w3):
+def test_pm_set_custom_registry(empty_sol_registry, fresh_w3):
     assert not hasattr(fresh_w3.pm, "registry")
     fresh_w3.pm.registry = empty_sol_registry
-    assert isinstance(fresh_w3.pm.registry, ERCRegistry)
+    assert isinstance(fresh_w3.pm.registry, SimpleRegistry)
     assert is_address(fresh_w3.pm.registry.address)
 
 
+@pytest.mark.xfail(reason="Need to properly add authorization as of 8/10/2022")
 def test_pm_must_set_registry_before_all_registry_interaction_functions(fresh_w3):
     with pytest.raises(PMError):
         fresh_w3.pm.release_package(
-            "package", "1.0.0", "ipfs://QmbeVyFLSuEUxiXKwSsEjef6icpdTdA4kGG9BcrJXKNKUW"
+            "package", "1.0.0", "ipfs://QmcxvhkJJVpbxEAa6cgW3B6XwPJb79w9GpNUv2P2THUzZR"
         )
     with pytest.raises(PMError):
         fresh_w3.pm.get_release_id_data(b"invalid_release_id")
@@ -82,16 +82,14 @@ def test_pm_must_set_registry_before_all_registry_interaction_functions(fresh_w3
         fresh_w3.pm.get_package_count()
 
 
-@pytest.mark.parametrize(
-    "registry_getter", ["empty_vy_registry", "empty_sol_registry"], indirect=True
-)
-def test_pm_release_package(registry_getter, w3):
-    w3.pm.registry = registry_getter
+@pytest.mark.xfail(reason="Need to properly add authorization as of 8/10/2022")
+def test_pm_release_package(empty_sol_registry, w3):
+    w3.pm.registry = empty_sol_registry
     w3.pm.release_package(
-        "escrow", "1.0.0", "ipfs://QmPDwMHk8e1aMEZg3iKsUiPSkhHkywpGB3KHKM52RtGrkv"
+        "escrow", "1.0.0", "ipfs://QmTpYHEog4yfmgx5GgvNCRQyDeQyBD4FWxTkiUP64AH1QC"
     )
     w3.pm.release_package(
-        "owned", "1.0.0", "ipfs://QmbeVyFLSuEUxiXKwSsEjef6icpdTdA4kGG9BcrJXKNKUW"
+        "owned", "1.0.0", "ipfs://QmcxvhkJJVpbxEAa6cgW3B6XwPJb79w9GpNUv2P2THUzZR"
     )
     release_id_1 = w3.pm.get_release_id("escrow", "1.0.0")
     release_id_2 = w3.pm.get_release_id("owned", "1.0.0")
@@ -99,17 +97,14 @@ def test_pm_release_package(registry_getter, w3):
     package_data_2 = w3.pm.get_release_id_data(release_id_2)
     assert package_data_1[0] == "escrow"
     assert package_data_1[1] == "1.0.0"
-    assert package_data_1[2] == "ipfs://QmPDwMHk8e1aMEZg3iKsUiPSkhHkywpGB3KHKM52RtGrkv"
+    assert package_data_1[2] == "ipfs://QmTpYHEog4yfmgx5GgvNCRQyDeQyBD4FWxTkiUP64AH1QC"
     assert package_data_2[0] == "owned"
     assert package_data_2[1] == "1.0.0"
-    assert package_data_2[2] == "ipfs://QmbeVyFLSuEUxiXKwSsEjef6icpdTdA4kGG9BcrJXKNKUW"
+    assert package_data_2[2] == "ipfs://QmcxvhkJJVpbxEAa6cgW3B6XwPJb79w9GpNUv2P2THUzZR"
 
 
-@pytest.mark.parametrize(
-    "registry_getter", ["loaded_vy_registry", "loaded_sol_registry"], indirect=True
-)
-def test_pm_get_release_data(registry_getter, w3):
-    registry, _, _ = registry_getter
+def test_pm_get_release_data(loaded_sol_registry, w3):
+    registry, _, _ = loaded_sol_registry
     w3.pm.registry = registry
     package_data = w3.pm.get_release_data("package", "1.0.0")
     assert package_data[0] == "package"
@@ -117,11 +112,8 @@ def test_pm_get_release_data(registry_getter, w3):
     assert package_data[2] == "ipfs://Qme4otpS88NV8yQi8TfTP89EsQC5bko3F5N1yhRoi6cwGV"
 
 
-@pytest.mark.parametrize(
-    "registry_getter", ["loaded_vy_registry", "loaded_sol_registry"], indirect=True
-)
-def test_pm_get_all_package_names(registry_getter, w3):
-    registry, _, _ = registry_getter
+def test_pm_get_all_package_names(loaded_sol_registry, w3):
+    registry, _, _ = loaded_sol_registry
     w3.pm.registry = registry
     all_pkgs = w3.pm.get_all_package_names()
     assert all_pkgs == (
@@ -134,20 +126,14 @@ def test_pm_get_all_package_names(registry_getter, w3):
     )
 
 
-@pytest.mark.parametrize(
-    "registry_getter", ["loaded_vy_registry", "loaded_sol_registry"], indirect=True
-)
-def test_pm_package_count(registry_getter, w3):
-    registry, _, _ = registry_getter
+def test_pm_package_count(loaded_sol_registry, w3):
+    registry, _, _ = loaded_sol_registry
     w3.pm.registry = registry
     assert w3.pm.get_package_count() == 6
 
 
-@pytest.mark.parametrize(
-    "registry_getter", ["loaded_vy_registry", "loaded_sol_registry"], indirect=True
-)
-def test_pm_get_release_count(registry_getter, w3):
-    registry, _, _ = registry_getter
+def test_pm_get_release_count(loaded_sol_registry, w3):
+    registry, _, _ = loaded_sol_registry
     w3.pm.registry = registry
     pkg_0_release_count = w3.pm.get_release_count("package")
     pkg_1_release_count = w3.pm.get_release_count("package1")
@@ -157,11 +143,8 @@ def test_pm_get_release_count(registry_getter, w3):
     assert pkg_2_release_count == 1
 
 
-@pytest.mark.parametrize(
-    "registry_getter", ["loaded_vy_registry", "loaded_sol_registry"], indirect=True
-)
-def test_pm_get_all_package_versions(registry_getter, w3):
-    registry, _, _ = registry_getter
+def test_pm_get_all_package_versions(loaded_sol_registry, w3):
+    registry, _, _ = loaded_sol_registry
     w3.pm.registry = registry
     all_rls_pkg_0 = w3.pm.get_all_package_releases("package")
     all_rls_pkg_1 = w3.pm.get_all_package_releases("package1")
@@ -182,18 +165,15 @@ def test_pm_get_all_package_versions(registry_getter, w3):
     )
 
 
-@pytest.mark.parametrize(
-    "registry_getter", ["loaded_vy_registry", "loaded_sol_registry"], indirect=True
-)
-def test_pm_get_package(registry_getter, w3, monkeypatch):
-    registry, _, _ = registry_getter
+def test_pm_get_package(loaded_sol_registry, w3, monkeypatch):
+    registry, _, _ = loaded_sol_registry
     w3.pm.registry = registry
     monkeypatch.setenv(
         "ETHPM_IPFS_BACKEND_CLASS", "ethpm.backends.ipfs.DummyIPFSBackend"
     )
     w3.pm.deploy_and_set_registry()
     w3.pm.release_package(
-        "owned", "1.0.0", "ipfs://QmbeVyFLSuEUxiXKwSsEjef6icpdTdA4kGG9BcrJXKNKUW"
+        "owned", "1.0.0", "ipfs://QmcxvhkJJVpbxEAa6cgW3B6XwPJb79w9GpNUv2P2THUzZR"
     )
     pkg = w3.pm.get_package("owned", "1.0.0")
     assert isinstance(pkg, Package)

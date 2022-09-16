@@ -1,3 +1,5 @@
+.. _filtering:
+
 Filtering
 =========
 
@@ -27,7 +29,7 @@ The :meth:`web3.eth.Eth.filter` method can be used to setup filters for:
 
         event_filter = mycontract.events.myEvent.createFilter(fromBlock='latest', argument_filters={'arg1':10})
 
-    Or built manually by supplying `valid filter params <https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_newfilter/>`_:
+    Or built manually by supplying `valid filter params <https://github.com/ethereum/execution-apis/blob/bea0266c42919a2fb3ee524fb91e624a23bc17c5/src/schemas/filter.json#L28>`_:
 
     .. code-block:: python
 
@@ -42,8 +44,9 @@ The :meth:`web3.eth.Eth.filter` method can be used to setup filters for:
 .. note ::
 
     Creating event filters requires that your Ethereum node has an API support enabled for filters.
-    It does not work with Infura nodes. To get event logs on Infura or other
-    stateless nodes please see :class:`web3.contract.ContractEvents`.
+    Note that Infura support for filters does not offer access to `pending` filters.
+    To get event logs on other stateless nodes please see :class:`web3.contract.ContractEvents`.
+    
 
 
 Filter Class
@@ -62,7 +65,7 @@ Filter Class
     Retrieve new entries for this filter.
 
     Logs will be retrieved using the
-    :func:`web3.eth.Eth.getFilterChanges` which returns only new entries since the last
+    :func:`web3.eth.Eth.get_filter_changes` which returns only new entries since the last
     poll.
 
 
@@ -71,7 +74,7 @@ Filter Class
     Retrieve all entries for this filter.
 
     Logs will be retrieved using the
-    :func:`web3.eth.Eth.getFilterLogs` which returns all entries that match the given
+    :func:`web3.eth.Eth.get_filter_logs` which returns all entries that match the given
     filter.
 
 
@@ -109,7 +112,7 @@ will return a new :class:`BlockFilter` object.
 ``TransactionFilter`` is a subclass of :class:`Filter`.
 
 You can setup a filter for new blocks using ``web3.eth.filter('pending')`` which
-will return a new :class:`BlockFilter` object.
+will return a new :class:`TransactionFilter` object.
 
     .. code-block:: python
 
@@ -120,8 +123,8 @@ will return a new :class:`BlockFilter` object.
 Event Log Filters
 -----------------
 
-You can set up a filter for event logs using the web3.py contract api: 
-:func:`web3.contract.Contract.events.<event_name>.createFilter`, which provides some conveniances for
+You can set up a filter for event logs using the web3.py contract api:
+:meth:`web3.contract.Contract.events.your_event_name.createFilter`, which provides some conveniences for
 creating event log filters. Refer to the following example:
 
     .. code-block:: python
@@ -129,15 +132,15 @@ creating event log filters. Refer to the following example:
         event_filter = myContract.events.<event_name>.createFilter(fromBlock="latest", argument_filters={'arg1':10})
         event_filter.get_new_entries()
 
-See :meth:`web3.contract.Contract.events.<event_name>.createFilter` documentation for more information.
+See :meth:`web3.contract.Contract.events.your_event_name.createFilter()` documentation for more information.
 
-You can set up an event log filter like the one above with `web3.eth.filter` by supplying a
-dictionary containing the standard filter parameters. Assuming that `arg1` is indexed, the
+You can set up an event log filter like the one above with ``web3.eth.filter`` by supplying a
+dictionary containing the standard filter parameters. Assuming that ``arg1`` is indexed, the
 equivalent filter creation would look like:
 
     .. code-block:: python
 
-        event_signature_hash = web3.sha3(text="eventName(uint32)").hex()
+        event_signature_hash = web3.keccak(text="eventName(uint32)").hex()
         event_filter = web3.eth.filter({
             "address": myContract_address,
             "topics": [event_signature_hash,
@@ -177,7 +180,7 @@ Getting events without setting up a filter
 ------------------------------------------
 
 You can query an Ethereum node for direct fetch of events, without creating a filter first.
-This works on all node types, including Infura.
+This works on all node types.
 
 For examples see :meth:`web3.contract.ContractEvents.getLogs`.
 
@@ -215,15 +218,15 @@ Asynchronous Filter Polling
 
 Starting with web3 version 4, the ``watch`` method was taken out of the web3 filter objects.
 There are many decisions to be made when designing a system regarding threading and concurrency.
-Rather than force a decision, web3 leaves these choices up to the user. Below are some example 
+Rather than force a decision, web3 leaves these choices up to the user. Below are some example
 implementations of asynchronous filter-event handling that can serve as starting points.
 
 Single threaded concurrency with ``async`` and ``await``
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 Beginning in python 3.5, the ``async`` and ``await`` built-in keywords were added.  These provide a
-shared api for coroutines that can be utilized by modules such as the built-in asyncio_.  Below is 
-an example event loop using asyncio_, that polls multiple web3 filter object, and passes new 
+shared api for coroutines that can be utilized by modules such as the built-in asyncio_.  Below is
+an example event loop using asyncio_, that polls multiple web3 filter object, and passes new
 entries to a handler.
 
         .. code-block:: python

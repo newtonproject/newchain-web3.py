@@ -7,12 +7,12 @@ from newchain_web3.providers.eth_tester import (
 )
 
 
-def test_set_provider(web3):
+def test_set_provider(w3):
     provider = EthereumTesterProvider()
 
-    web3.provider = provider
+    w3.provider = provider
 
-    assert web3.provider == provider
+    assert w3.provider == provider
 
 
 def test_auto_provider_none():
@@ -20,6 +20,11 @@ def test_auto_provider_none():
     w3 = Web3()
 
     # non-node requests succeed
-    w3.toHex(0) == '0x0'
+    w3.toHex(0) == "0x0"
 
     type(w3.provider) == AutoProvider
+
+
+def test_provider_default_value_for_ccip_read_redirect(w3):
+    assert w3.provider.global_ccip_read_enabled
+    assert w3.provider.ccip_read_max_redirects == 4

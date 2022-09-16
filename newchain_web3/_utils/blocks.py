@@ -1,3 +1,7 @@
+from typing import (
+    Any,
+)
+
 from eth_utils import (
     is_bytes,
     is_hex,
@@ -6,32 +10,39 @@ from eth_utils import (
     is_text,
     remove_0x_prefix,
 )
+from eth_utils.toolz import (
+    curry,
+)
+
+from web3.types import (
+    RPCEndpoint,
+)
 
 
-def is_predefined_block_number(value):
+def is_predefined_block_number(value: Any) -> bool:
     if is_text(value):
         value_text = value
     elif is_bytes(value):
         # `value` could either be random bytes or the utf-8 encoding of
         # one of the words in: {"latest", "pending", "earliest"}
-        # We cannot decode the bytes as utf8, because random bytes likely won't be valid.
-        # So we speculatively decode as 'latin-1', which cannot fail.
-        value_text = value.decode('latin-1')
+        # We cannot decode the bytes as utf8, because random bytes likely won't be
+        # valid. So we speculatively decode as 'latin-1', which cannot fail.
+        value_text = value.decode("latin-1")
     elif is_integer(value):
         return False
     else:
-        raise TypeError("unrecognized block reference: %r" % value)
+        raise TypeError(f"unrecognized block reference: {value!r}")
 
     return value_text in {"latest", "pending", "earliest"}
 
 
-def is_hex_encoded_block_hash(value):
+def is_hex_encoded_block_hash(value: Any) -> bool:
     if not is_string(value):
         return False
     return len(remove_0x_prefix(value)) == 64 and is_hex(value)
 
 
-def is_hex_encoded_block_number(value):
+def is_hex_encoded_block_number(value: Any) -> bool:
     if not is_string(value):
         return False
     elif is_hex_encoded_block_hash(value):
@@ -43,7 +54,10 @@ def is_hex_encoded_block_number(value):
     return 0 <= value_as_int < 2**256
 
 
-def select_method_for_block_identifier(value, if_hash, if_number, if_predefined):
+@curry
+def select_method_for_block_identifier(
+    value: Any, if_hash: RPCEndpoint, if_number: RPCEndpoint, if_predefined: RPCEndpoint
+) -> RPCEndpoint:
     if is_predefined_block_number(value):
         return if_predefined
     elif isinstance(value, bytes):
@@ -56,5 +70,5 @@ def select_method_for_block_identifier(value, if_hash, if_number, if_predefined)
         return if_number
     else:
         raise ValueError(
-            "Value did not match any of the recognized block identifiers: {0}".format(value)
+            f"Value did not match any of the recognized block identifiers: {value}"
         )

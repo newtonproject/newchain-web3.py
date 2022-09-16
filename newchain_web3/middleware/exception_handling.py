@@ -1,14 +1,42 @@
-from newchain_web3._utils.toolz import (
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Optional,
+    Tuple,
+    Type,
+)
+
+# from newchain_web3._utils.toolz import (
+#     excepts,
+# )
+from eth_utils.toolz import (
     excepts,
 )
 
+from newchain_web3.types import (
+    Middleware,
+    RPCEndpoint,
+    RPCResponse,
+)
 
-def construct_exception_handler_middleware(method_handlers=None):
+if TYPE_CHECKING:
+    from newchain_web3 import Web3  # noqa: F401
+
+
+def construct_exception_handler_middleware(
+    method_handlers: Optional[
+        Dict[RPCEndpoint, Tuple[Type[BaseException], Callable[..., None]]]
+    ] = None
+) -> Middleware:
     if method_handlers is None:
         method_handlers = {}
 
-    def exception_handler_middleware(make_request, web3):
-        def middleware(method, params):
+    def exception_handler_middleware(
+        make_request: Callable[[RPCEndpoint, Any], Any], w3: "Web3"
+    ) -> Callable[[RPCEndpoint, Any], RPCResponse]:
+        def middleware(method: RPCEndpoint, params: Any) -> RPCResponse:
             if method in method_handlers:
                 exc_type, handler = method_handlers[method]
                 return excepts(
@@ -18,5 +46,7 @@ def construct_exception_handler_middleware(method_handlers=None):
                 )(method, params)
             else:
                 return make_request(method, params)
+
         return middleware
+
     return exception_handler_middleware

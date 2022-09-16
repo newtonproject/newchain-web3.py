@@ -12,7 +12,7 @@ exposed by the web3 object and the backend or node that web3 is connecting to.
 * **Middlewares** provide hooks for monitoring and modifying requests and
   responses to and from the provider.  These can be *global* operating on all
   providers or specific to one provider.
-* **Managers** provide thread safety and primatives to allow for asyncronous usage of web3.
+* **Managers** provide thread safety and primatives to allow for asynchronous usage of web3.
 
 Here are some common things you might want to do with these APIs.
 
@@ -80,16 +80,6 @@ HTTP or an IPC socket.  There is however nothing which requires providers to be
 RPC based, allowing for providers designed for testing purposes which use an
 in-memory EVM to fulfill requests.
 
-In most simple cases you will be using a single provider.  However, if you
-would like to use Web3 with multiple providers, you can simply pass them in as
-a list when instantiating your ``Web3`` object.
-
-
-.. code-block:: python
-
-    >>> w3 = Web3([provider_a, provider_b])
-
-
 
 Writing your own Provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -111,19 +101,13 @@ setting the middlewares the provider should use.
       the JSON-RPC method being called.
 
 
-.. py:method:: BaseProvider.isConnected()
+.. py:method:: BaseProvider.is_connected()
 
     This function should return ``True`` or ``False`` depending on whether the
     provider should be considered *connected*.  For example, an IPC socket
     based provider should return ``True`` if the socket is open and ``False``
     if the socket is closed.
 
-
-If a provider is unable to respond to certain RPC calls it should raise the
-``web3.exceptions.CannotHandleRequest`` exception.  When this happens, the
-request is issued to the next configured provider.  If no providers are able to
-handle the request then a ``web3.exceptions.UnhandledRequest`` error will be
-raised.
 
 .. py:attribute:: BaseProvider.middlewares
 

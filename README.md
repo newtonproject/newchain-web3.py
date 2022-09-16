@@ -2,7 +2,7 @@
 
 A Python implementation of NewChain Web3 which is forked from https://github.com/ethereum/web3.py.
 
-* Python 3.6+ support
+* Python 3.7.2+ support
 
 ## Developer Setup
 

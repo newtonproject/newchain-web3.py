@@ -28,12 +28,12 @@ A Web3 instance configured to connect to the backend for the integration test.
 
 #### `empty_block`
 
-A block as returned by `web3.eth.getBlock` that has no transactions.
+A block as returned by `web3.eth.get_block` that has no transactions.
 
 
 #### `block_with_txn`
 
-A block as returned by `web3.eth.getBlock` that has a single transaction.
+A block as returned by `web3.eth.get_block` that has a single transaction.
 
 
 #### `math_contract`
@@ -87,3 +87,8 @@ The address of an account that can be unlocked using the `unlockable_account_pw`
 #### `unlockable_account_pw`
 
 The password that can be used to unlock the `unlockable_account`
+
+
+# Updating Fixture ZIPs
+
+**ONLY** trusted parties should be allowed to update zipped fixtures, since they pose an attack surface through which a third party could inject malicious code into the codebase.

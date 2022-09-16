@@ -1,3 +1,12 @@
+import decimal
+
+from ens import (
+    AsyncENS,
+    ENS,
+)
+from eth_abi.codec import (
+    ABICodec,
+)
 from eth_utils import (
     add_0x_prefix,
     apply_to_return_value,
@@ -6,63 +15,103 @@ from eth_utils import (
     is_checksum_address,
     keccak as eth_utils_keccak,
     remove_0x_prefix,
+    to_bytes,
     to_checksum_address,
+    to_int,
+    to_text,
     to_wei,
+)
+from functools import (
+    wraps,
 )
 from hexbytes import (
     HexBytes,
 )
+from typing import (
+    Any,
+    Coroutine,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Type,
+    TYPE_CHECKING,
+    Union,
+    cast,
+)
 
-from ens import ENS
-from newchain_web3._utils.abi import (
-    map_abi_data,
+from eth_typing import (
+    AnyAddress,
+    ChecksumAddress,
+    HexStr,
+    Primitives,
+)
+from eth_typing.abi import TypeStr
+from eth_utils import (
+    combomethod,
 )
 from newchain_web3._utils.decorators import (
     combomethod,
+)
+
+from newchain_web3._utils.abi import (
+    build_default_registry,
+    build_strict_registry,
+    map_abi_data,
 )
 from newchain_web3._utils.empty import (
     empty,
 )
 from newchain_web3._utils.encoding import (
     hex_encode_abi_type,
-    to_bytes,
     to_hex,
-    to_int,
-    to_text,
     to_json,
+)
+from newchain_web3._utils.rpc_abi import (
+    RPC,
+)
+from newchain_web3._utils.module import (
+    attach_modules as _attach_modules,
 )
 from newchain_web3._utils.normalizers import (
     abi_ens_resolver,
 )
-from newchain_web3.admin import (
-    Admin,
-)
 from newchain_web3.eth import (
     Eth,
 )
-from newchain_web3.iban import (
-    Iban,
+from newchain_web3.geth import (
+    Geth,
+    GethAdmin,
+    GethMiner,
+    GethPersonal,
+    GethTxPool,
 )
 from newchain_web3.manager import (
     RequestManager as DefaultRequestManager,
 )
-from newchain_web3.miner import (
-    Miner,
+from newchain_web3.module import (
+    Module,
 )
 from newchain_web3.net import (
+    AsyncNet,
     Net,
 )
 from newchain_web3.parity import (
     Parity,
+    ParityPersonal,
 )
-from newchain_web3.personal import (
-    Personal,
+from newchain_web3.providers import (
+    AsyncBaseProvider,
+    BaseProvider,
 )
 from newchain_web3.providers.eth_tester import (
     EthereumTesterProvider,
 )
 from newchain_web3.providers.ipc import (
     IPCProvider,
+)
+from newchain_web3.providers.async_rpc import (
+    AsyncHTTPProvider,
 )
 from newchain_web3.providers.rpc import (
     HTTPProvider,
@@ -73,24 +122,40 @@ from newchain_web3.providers.websocket import (
 from newchain_web3.testing import (
     Testing,
 )
-from newchain_web3.txpool import (
-    TxPool,
+from newchain_web3.types import (  # noqa: F401
+    Middleware,
+    MiddlewareOnion,
+    Wei,
 )
 from newchain_web3.version import (
     Version,
 )
 
+if TYPE_CHECKING:
+    from newchain_web3.pm import PM  # noqa: F401
+    from newchain_web3._utils.empty import Empty  # noqa: F401
 
-def get_default_modules():
+
+def get_default_modules() -> Dict[str, Union[Type[Module], Sequence[Any]]]:
     return {
         "eth": Eth,
         "net": Net,
-        "personal": Personal,
         "version": Version,
-        "txpool": TxPool,
-        "miner": Miner,
-        "admin": Admin,
-        "parity": Parity,
+        "parity": (
+            Parity,
+            {
+                "personal": ParityPersonal,
+            },
+        ),
+        "geth": (
+            Geth,
+            {
+                "admin": GethAdmin,
+                "miner": GethMiner,
+                "personal": GethPersonal,
+                "txpool": GethTxPool,
+            },
+        ),
         "testing": Testing,
     }
 
@@ -101,70 +166,146 @@ class Web3:
     IPCProvider = IPCProvider
     EthereumTesterProvider = EthereumTesterProvider
     WebsocketProvider = WebsocketProvider
+    AsyncHTTPProvider = AsyncHTTPProvider
 
     # Managers
     RequestManager = DefaultRequestManager
 
-    # Iban
-    Iban = Iban
-
     # Encoding and Decoding
-    toBytes = staticmethod(to_bytes)
-    toInt = staticmethod(to_int)
-    toHex = staticmethod(to_hex)
-    toText = staticmethod(to_text)
-    toJSON = staticmethod(to_json)
+    @staticmethod
+    @wraps(to_bytes)
+    def toBytes(
+        primitive: Primitives = None, hexstr: HexStr = None, text: str = None
+    ) -> bytes:
+        return to_bytes(primitive, hexstr, text)
+
+    @staticmethod
+    @wraps(to_int)
+    def toInt(
+        primitive: Primitives = None, hexstr: HexStr = None, text: str = None
+    ) -> int:
+        return to_int(primitive, hexstr, text)
+
+    @staticmethod
+    @wraps(to_hex)
+    def toHex(
+        primitive: Primitives = None, hexstr: HexStr = None, text: str = None
+    ) -> HexStr:
+        return to_hex(primitive, hexstr, text)
+
+    @staticmethod
+    @wraps(to_text)
+    def toText(
+        primitive: Primitives = None, hexstr: HexStr = None, text: str = None
+    ) -> str:
+        return to_text(primitive, hexstr, text)
+
+    @staticmethod
+    @wraps(to_json)
+    def toJSON(obj: Dict[Any, Any]) -> str:
+        return to_json(obj)
 
     # Currency Utility
-    toWei = staticmethod(to_wei)
-    fromWei = staticmethod(from_wei)
+    @staticmethod
+    @wraps(to_wei)
+    def toWei(number: Union[int, float, str, decimal.Decimal], unit: str) -> Wei:
+        return cast(Wei, to_wei(number, unit))
+
+    @staticmethod
+    @wraps(from_wei)
+    def fromWei(number: int, unit: str) -> Union[int, decimal.Decimal]:
+        return from_wei(number, unit)
 
     # Address Utility
-    isAddress = staticmethod(is_address)
-    isChecksumAddress = staticmethod(is_checksum_address)
-    toChecksumAddress = staticmethod(to_checksum_address)
+    @staticmethod
+    @wraps(is_address)
+    def isAddress(value: Any) -> bool:
+        return is_address(value)
 
-    def __init__(self, provider=None, middlewares=None, modules=None, ens=empty):
+    @staticmethod
+    @wraps(is_checksum_address)
+    def isChecksumAddress(value: Any) -> bool:
+        return is_checksum_address(value)
+
+    @staticmethod
+    @wraps(to_checksum_address)
+    def toChecksumAddress(value: Union[AnyAddress, str, bytes]) -> ChecksumAddress:
+        return to_checksum_address(value)
+
+    # mypy Types
+    eth: Eth
+    parity: Parity
+    geth: Geth
+    net: Net
+    async_net: AsyncNet
+
+    def __init__(
+        self,
+        provider: Optional[Union[BaseProvider, AsyncBaseProvider]] = None,
+        middlewares: Optional[Sequence[Any]] = None,
+        modules: Optional[Dict[str, Union[Type[Module], Sequence[Any]]]] = None,
+        external_modules: Optional[
+            Dict[str, Union[Type[Module], Sequence[Any]]]
+        ] = None,
+        ens: Union[ENS, AsyncENS, "Empty"] = empty,
+    ) -> None:
         self.manager = self.RequestManager(self, provider, middlewares)
+        # this codec gets used in the module initialization,
+        # so it needs to come before attach_modules
+        self.codec = ABICodec(build_default_registry())
 
         if modules is None:
             modules = get_default_modules()
 
-        for module_name, module_class in modules.items():
-            module_class.attach(self, module_name)
+        self.attach_modules(modules)
+
+        if external_modules is not None:
+            self.attach_modules(external_modules)
 
         self.ens = ens
 
     @property
-    def middleware_onion(self):
+    def middleware_onion(self) -> MiddlewareOnion:
         return self.manager.middleware_onion
 
     @property
-    def provider(self):
+    def provider(self) -> Union[BaseProvider, AsyncBaseProvider]:
         return self.manager.provider
 
     @provider.setter
-    def provider(self, provider):
+    def provider(self, provider: Union[BaseProvider, AsyncBaseProvider]) -> None:
         self.manager.provider = provider
+
+    @property
+    def clientVersion(self) -> str:
+        return self.manager.request_blocking(RPC.web3_clientVersion, [])
+
+    @property
+    def api(self) -> str:
+        from web3 import __version__
+
+        return __version__
 
     @staticmethod
     @apply_to_return_value(HexBytes)
-    def keccak(primitive=None, text=None, hexstr=None):
+    def keccak(
+        primitive: Optional[Primitives] = None,
+        text: Optional[str] = None,
+        hexstr: Optional[HexStr] = None,
+    ) -> bytes:
         if isinstance(primitive, (bytes, int, type(None))):
             input_bytes = to_bytes(primitive, hexstr=hexstr, text=text)
             return eth_utils_keccak(input_bytes)
 
         raise TypeError(
-            "You called keccak with first arg %r and keywords %r. You must call it with one of "
-            "these approaches: keccak(text='txt'), keccak(hexstr='0x747874'), "
-            "keccak(b'\\x74\\x78\\x74'), or keccak(0x747874)." % (
-                primitive,
-                {'text': text, 'hexstr': hexstr}
-            )
+            f"You called keccak with first arg {primitive!r} and keywords "
+            f"{{'text': {text!r}, 'hexstr': {hexstr!r}}}. You must call it with "
+            "one of these approaches: keccak(text='txt'), keccak(hexstr='0x747874'), "
+            "keccak(b'\\x74\\x78\\x74'), or keccak(0x747874)."
         )
 
     @combomethod
-    def solidityKeccak(cls, abi_types, values):
+    def solidityKeccak(cls, abi_types: List[TypeStr], values: List[Any]) -> bytes:
         """
         Executes keccak256 exactly as Solidity does.
         Takes list of abi_types as inputs -- `[uint24, int8[], bool]`
@@ -173,7 +314,7 @@ class Web3:
         if len(abi_types) != len(values):
             raise ValueError(
                 "Length mismatch between provided abi types and values.  Got "
-                "{0} types and {1} values.".format(len(abi_types), len(values))
+                f"{len(abi_types)} types and {len(values)} values."
             )
 
         if isinstance(cls, type):
@@ -182,38 +323,59 @@ class Web3:
             w3 = cls
         normalized_values = map_abi_data([abi_ens_resolver(w3)], abi_types, values)
 
-        hex_string = add_0x_prefix(''.join(
-            remove_0x_prefix(hex_encode_abi_type(abi_type, value))
-            for abi_type, value
-            in zip(abi_types, normalized_values)
-        ))
+        hex_string = add_0x_prefix(
+            HexStr(
+                "".join(
+                    remove_0x_prefix(hex_encode_abi_type(abi_type, value))
+                    for abi_type, value in zip(abi_types, normalized_values)
+                )
+            )
+        )
         return cls.keccak(hexstr=hex_string)
 
-    def isConnected(self):
-        return self.provider.isConnected()
+    def attach_modules(
+        self, modules: Optional[Dict[str, Union[Type[Module], Sequence[Any]]]]
+    ) -> None:
+        """
+        Attach modules to the `Web3` instance.
+        """
+        _attach_modules(self, modules)
+
+    def is_connected(self) -> Union[bool, Coroutine[Any, Any, bool]]:
+        return self.provider.is_connected()
+
+    def is_encodable(self, _type: TypeStr, value: Any) -> bool:
+        return self.codec.is_encodable(_type, value)
 
     @property
-    def ens(self):
+    def ens(self) -> Union[ENS, AsyncENS, "Empty"]:
         if self._ens is empty:
-            return ENS.fromWeb3(self)
-        else:
-            return self._ens
+            return AsyncENS.fromWeb3(self) if self.eth.is_async else ENS.fromWeb3(self)
+
+        return self._ens
 
     @ens.setter
-    def ens(self, new_ens):
+    def ens(self, new_ens: Union[ENS, AsyncENS, "Empty"]) -> None:
         self._ens = new_ens
 
     @property
-    def pm(self):
-        if hasattr(self, '_pm'):
-            return self._pm
+    def pm(self) -> "PM":
+        if hasattr(self, "_pm"):
+            # ignored b/c property is dynamically set
+            # via enable_unstable_package_management_api
+            return self._pm  # type: ignore
         else:
             raise AttributeError(
                 "The Package Management feature is disabled by default until "
-                "its API stabilizes. To use these features, please enable them by running "
-                "`w3.enable_unstable_package_management_api()` and try again."
+                "its API stabilizes. To use these features, please enable them by "
+                "running `w3.enable_unstable_package_management_api()` and try again."
             )
 
-    def enable_unstable_package_management_api(self):
-        from newchain_web3.pm import PM
-        PM.attach(self, '_pm')
+    def enable_unstable_package_management_api(self) -> None:
+        from newchain_web3.pm import PM  # noqa: F811
+
+        if not hasattr(self, "_pm"):
+            self.attach_modules({"_pm": PM})
+
+    def enable_strict_bytes_type_checking(self) -> None:
+        self.codec = ABICodec(build_strict_registry())
