@@ -16,19 +16,19 @@ from eth_utils.toolz import (
     pipe,
 )
 
-from web3._utils.filters import (
+from newchain_web3._utils.filters import (
     LogFilter,
     _UseExistingFilter,
 )
-from web3.method import (
+from newchain_web3.method import (
     Method,
 )
-from web3.types import (
+from newchain_web3.types import (
     RPCResponse,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 @curry

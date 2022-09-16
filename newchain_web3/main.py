@@ -50,9 +50,9 @@ from eth_typing.abi import TypeStr
 from eth_utils import (
     combomethod,
 )
-from newchain_web3._utils.decorators import (
-    combomethod,
-)
+# from newchain_web3._utils.decorators import (
+#     combomethod,
+# )
 
 from newchain_web3._utils.abi import (
     build_default_registry,

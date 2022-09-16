@@ -14,13 +14,13 @@ from newchain_web3._utils.toolz import (
 from newchain_web3.datastructures import (
     AttributeDict,
 )
-from web3.types import (
+from newchain_web3.types import (
     RPCEndpoint,
     RPCResponse,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 def attrdict_middleware(

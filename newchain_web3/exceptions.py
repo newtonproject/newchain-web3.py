@@ -5,7 +5,7 @@ from typing import (
     Dict,
 )
 
-from web3.types import (
+from newchain_web3.types import (
     BlockData,
 )
 

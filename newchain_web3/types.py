@@ -24,20 +24,20 @@ from hexbytes import (
     HexBytes,
 )
 
-from web3._utils.compat import (
+from newchain_web3._utils.compat import (
     Literal,
     TypedDict,
 )
-from web3._utils.function_identifiers import (
+from newchain_web3._utils.function_identifiers import (
     FallbackFn,
     ReceiveFn,
 )
-from web3.datastructures import (
+from newchain_web3.datastructures import (
     NamedElementOnion,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 TReturn = TypeVar("TReturn")

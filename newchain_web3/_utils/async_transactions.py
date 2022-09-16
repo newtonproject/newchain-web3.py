@@ -18,33 +18,33 @@ from eth_utils.toolz import (
     merge,
 )
 
-from web3._utils.request import (
+from newchain_web3._utils.request import (
     async_get_json_from_client_response,
     async_get_response_from_get_request,
     async_get_response_from_post_request,
 )
-from web3._utils.type_conversion import (
+from newchain_web3._utils.type_conversion import (
     to_bytes_if_hex,
     to_hex_if_bytes,
 )
-from web3._utils.utility_methods import (
+from newchain_web3._utils.utility_methods import (
     any_in_dict,
 )
-from web3.constants import (
+from newchain_web3.constants import (
     DYNAMIC_FEE_TXN_PARAMS,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     ValidationError,
 )
-from web3.types import (
+from newchain_web3.types import (
     BlockIdentifier,
     TxParams,
     Wei,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
-    from web3.eth import AsyncEth  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
+    from newchain_web3.eth import AsyncEth  # noqa: F401
 
 
 async def _estimate_gas(w3: "Web3", tx: TxParams) -> Awaitable[int]:

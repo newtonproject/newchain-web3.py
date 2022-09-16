@@ -51,14 +51,14 @@ from eth_utils.toolz import (
 )
 
 import web3
-from newchain_web3._utils.encoding import (
-    encode_single_packed,
-    hexstr_if_str,
-    to_bytes,
-)
-from newchain_web3._utils.formatters import (
-    apply_formatter_if,
-)
+# from newchain_web3._utils.encoding import (
+#     encode_single_packed,
+#     hexstr_if_str,
+#     to_bytes,
+# )
+# from newchain_web3._utils.formatters import (
+#     apply_formatter_if,
+# )
 from newchain_web3._utils.abi import (
     exclude_indexed_event_inputs,
     get_indexed_event_inputs,
@@ -73,13 +73,13 @@ from newchain_web3._utils.encoding import (
 from newchain_web3._utils.normalizers import (
     BASE_RETURN_NORMALIZERS,
 )
-from newchain_web3._utils.toolz import (
-    complement,
-    compose,
-    cons,
-    curry,
-    valfilter,
-)
+# from newchain_web3._utils.toolz import (
+#     complement,
+#     compose,
+#     cons,
+#     curry,
+#     valfilter,
+# )
 from newchain_web3.datastructures import (
     AttributeDict,
 )

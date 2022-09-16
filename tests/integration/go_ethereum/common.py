@@ -19,12 +19,13 @@ from newchain_web3._utils.module_testing import (  # noqa: F401
     NetModuleTest,
     Web3ModuleTest,
 )
-from web3.types import (
+
+from newchain_web3.types import (
     BlockData,
 )
 
 if TYPE_CHECKING:
-    from web3 import (  # noqa: F401
+    from newchain_web3 import (  # noqa: F401
         Web3,
     )
 

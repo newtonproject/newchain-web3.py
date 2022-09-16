@@ -39,9 +39,9 @@ from eth_utils.address import (
 from eth_utils.toolz import (
     curry,
 )
-from newchain_web3._utils.toolz import (
-    curry,
-)
+# from newchain_web3._utils.toolz import (
+#     curry,
+# )
 from hexbytes import (
     HexBytes,
 )
@@ -63,14 +63,14 @@ from newchain_web3._utils.validation import (
 from newchain_web3.exceptions import (
     InvalidAddress,
 )
-from web3.types import (  # noqa: F401
+from newchain_web3.types import (  # noqa: F401
     ABI,
     ABIEvent,
     ABIFunction,
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
 
 
 def implicitly_identity(

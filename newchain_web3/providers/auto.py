@@ -26,7 +26,7 @@ from newchain_web3.providers import (
     IPCProvider,
     WebsocketProvider,
 )
-from web3.types import (
+from newchain_web3.types import (
     RPCEndpoint,
     RPCResponse,
 )

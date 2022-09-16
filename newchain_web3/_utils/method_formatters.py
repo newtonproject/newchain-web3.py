@@ -52,47 +52,47 @@ from hexbytes import (
     HexBytes,
 )
 
-from web3._utils.abi import (
+from newchain_web3._utils.abi import (
     is_length,
 )
-from web3._utils.encoding import (
+from newchain_web3._utils.encoding import (
     hexstr_if_str,
     to_hex,
 )
-from web3._utils.filters import (
+from newchain_web3._utils.filters import (
     BlockFilter,
     LogFilter,
     TransactionFilter,
 )
-from web3._utils.formatters import (
+from newchain_web3._utils.formatters import (
     hex_to_integer,
     integer_to_hex,
     is_array_of_dicts,
     is_array_of_strings,
     remove_key_if,
 )
-from web3._utils.normalizers import (
+from newchain_web3._utils.normalizers import (
     abi_address_to_hex,
     abi_bytes_to_hex,
     abi_int_to_hex,
     abi_string_to_hex,
 )
-from web3._utils.rpc_abi import (
+from newchain_web3._utils.rpc_abi import (
     RPC,
     RPC_ABIS,
     abi_request_formatters,
 )
-from web3.datastructures import (
+from newchain_web3.datastructures import (
     AttributeDict,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     BlockNotFound,
     ContractLogicError,
     InvalidParityMode,
     OffchainLookup,
     TransactionNotFound,
 )
-from web3.types import (
+from newchain_web3.types import (
     BlockIdentifier,
     CallOverrideParams,
     Formatters,
@@ -104,9 +104,9 @@ from web3.types import (
 )
 
 if TYPE_CHECKING:
-    from web3 import Web3  # noqa: F401
-    from web3.module import Module  # noqa: F401
-    from web3.eth import Eth  # noqa: F401
+    from newchain_web3 import Web3  # noqa: F401
+    from newchain_web3.module import Module  # noqa: F401
+    from newchain_web3.eth import Eth  # noqa: F401
 
 
 def bytes_to_ascii(value: bytes) -> str:
