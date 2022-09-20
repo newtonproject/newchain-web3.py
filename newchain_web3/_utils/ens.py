@@ -18,7 +18,7 @@ from eth_utils import (
     is_hex_address,
 )
 
-from ens import ENS
+from ens.ens import ENS
 from newchain_web3.exceptions import (
     NameNotFound,
 )

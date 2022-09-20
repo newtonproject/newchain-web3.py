@@ -1,7 +1,9 @@
 import decimal
 
-from ens import (
+from ens.async_ens import (
     AsyncENS,
+)
+from ens.ens import (
     ENS,
 )
 from eth_abi.codec import (
@@ -282,7 +284,7 @@ class Web3:
 
     @property
     def api(self) -> str:
-        from web3 import __version__
+        from newchain_web3 import __version__
 
         return __version__
 

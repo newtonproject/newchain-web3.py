@@ -6,7 +6,7 @@ from setuptools import (
 
 extras_require = {
     "tester": [
-        "eth-tester[py-evm]==v0.6.0-beta.5",
+        "eth-tester[py-evm]==v0.7.0-beta.1",
         "py-geth>=3.9.1,<4",
     ],
     "linter": [
@@ -32,8 +32,7 @@ extras_require = {
         "toposort>=1.4",
         "towncrier==18.5.0",
         "urllib3",
-        "newchain-web3>=0.1.0",
-        "wheel"
+        "wheel",
     ],
     "dev": [
         "bumpversion",
@@ -65,19 +64,19 @@ with open("./README.md") as readme:
     long_description = readme.read()
 
 setup(
-    name="web3",
-    # *IMPORTANT*: Don't manually change the version here. Use the 'bumpversion' utility.
-    version="6.0.0-beta.4",
+    name="newchain-web3",
+    version="0.2.0",
     description="""NewChain-Web3.py""",
-    long_description_markdown_filename='README.md',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author="Xia Wu",
     author_email="xiawu@zeuux.org",
-    url="https://github.com/xiawu/newchain-web3.py",
+    url="https://github.com/newtonproject/newchain-lib-web3-py",
     include_package_data=True,
     install_requires=[
         "aiohttp>=3.7.4.post0,<4",
         "eth-abi>=3.0.0,<4.0.0",
-        "newchain-account>=0.1.0",
+        "newchain-account>=0.3.0",
         "eth-hash[pycryptodome]>=0.2.0,<1.0.0",
         "eth-typing>=3.0.0,<4.0.0",
         "eth-utils>=2.0.0,<3.0.0",
@@ -94,13 +93,12 @@ setup(
     ],
     python_requires=">=3.7.2",
     extras_require=extras_require,
-    py_modules=["web3", "ens", "ethpm"],
-    entry_points={"pytest11": ["pytest_ethereum = newchain-web3.tools.pytest_ethereum.plugins"]},
+    py_modules=["newchain_web3", "ens", "ethpm"],
     license="MIT",
     zip_safe=False,
     keywords="newchain",
     packages=find_packages(exclude=["tests", "tests.*"]),
-    package_data={"newchain-web3": ["py.typed"]},
+    package_data={"newchain_web3": ["py.typed"]},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",

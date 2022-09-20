@@ -11,7 +11,7 @@ from requests.exceptions import (
     TooManyRedirects,
 )
 
-import web3
+import newchain_web3
 from newchain_web3.middleware.exception_retry_request import (
     check_if_retry_on_failure,
     exception_retry_middleware,
@@ -86,7 +86,7 @@ def test_is_strictly_default_http_middleware():
 @patch("web3.providers.rpc.make_post_request", side_effect=ConnectionError)
 def test_check_with_all_middlewares(make_post_request_mock):
     provider = HTTPProvider()
-    w3 = web3.Web3(provider)
+    w3 = newchain_web3.Web3(provider)
     with pytest.raises(ConnectionError):
         w3.eth.block_number
     assert make_post_request_mock.call_count == 5

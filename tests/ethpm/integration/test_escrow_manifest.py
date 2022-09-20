@@ -13,7 +13,7 @@ from ethpm.exceptions import (
 from ethpm.tools import (
     get_ethpm_spec_manifest,
 )
-import web3
+import newchain_web3
 
 
 def test_deployed_escrow_and_safe_send(escrow_manifest, w3):
@@ -53,7 +53,7 @@ def test_deployed_escrow_and_safe_send(escrow_manifest, w3):
     contract_instance = LinkedEscrowFactory(escrow_address)
     assert EscrowFactory.needs_bytecode_linking is True
     assert LinkedEscrowFactory.needs_bytecode_linking is False
-    assert isinstance(contract_instance, web3.contract.Contract)
+    assert isinstance(contract_instance, newchain_web3.contract.Contract)
     assert safe_send_address in LinkedEscrowFactory.bytecode
     assert safe_send_address in LinkedEscrowFactory.bytecode_runtime
     assert safe_send_address not in EscrowFactory.bytecode

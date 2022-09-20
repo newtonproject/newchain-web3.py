@@ -10,19 +10,19 @@ from eth_typing import (
     URI,
 )
 
-from web3._utils.request import (
+from newchain_web3._utils.request import (
     get_response_from_get_request,
     get_response_from_post_request,
 )
-from web3._utils.type_conversion import (
+from newchain_web3._utils.type_conversion import (
     to_bytes_if_hex,
     to_hex_if_bytes,
 )
-from web3.exceptions import (
+from newchain_web3.exceptions import (
     MultipleFailedRequests,
     ValidationError,
 )
-from web3.types import (
+from newchain_web3.types import (
     TxParams,
 )
 

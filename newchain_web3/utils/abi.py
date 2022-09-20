@@ -3,7 +3,7 @@ from typing import (
     Union,
 )
 
-from web3.types import (
+from newchain_web3.types import (
     ABIEvent,
     ABIFunction,
 )
