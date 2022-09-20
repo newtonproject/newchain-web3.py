@@ -1,3 +1,6 @@
+from json import (
+    JSONDecodeError,
+)
 import logging
 import os
 from pathlib import (
@@ -6,23 +9,30 @@ from pathlib import (
 import socket
 import sys
 import threading
+from types import (
+    TracebackType,
+)
+from typing import (
+    Any,
+    Type,
+    Union,
+)
 
 from newchain_web3._utils.threads import (
     Timeout,
+)
+from newchain_web3.types import (
+    RPCEndpoint,
+    RPCResponse,
 )
 
 from .base import (
     JSONBaseProvider,
 )
 
-try:
-    from json import JSONDecodeError
-except ImportError:
-    JSONDecodeError = ValueError
 
-
-def get_ipc_socket(ipc_path, timeout=0.1):
-    if sys.platform == 'win32':
+def get_ipc_socket(ipc_path: str, timeout: float = 2.0) -> socket.socket:
+    if sys.platform == "win32":
         # On Windows named pipe is used. Simulate socket with it.
         from newchain_web3._utils.windows import NamedPipe
 
@@ -37,18 +47,25 @@ def get_ipc_socket(ipc_path, timeout=0.1):
 class PersistantSocket:
     sock = None
 
-    def __init__(self, ipc_path):
+    def __init__(self, ipc_path: str) -> None:
         self.ipc_path = ipc_path
 
-    def __enter__(self):
+    def __enter__(self) -> socket.socket:
         if not self.ipc_path:
-            raise FileNotFoundError("cannot connect to IPC socket at path: %r" % self.ipc_path)
+            raise FileNotFoundError(
+                f"cannot connect to IPC socket at path: {self.ipc_path!r}"
+            )
 
         if not self.sock:
             self.sock = self._open()
         return self.sock
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(
+        self,
+        exc_type: Type[BaseException],
+        exc_value: BaseException,
+        traceback: TracebackType,
+    ) -> None:
         # only close the socket if there was an error
         if exc_value is not None:
             try:
@@ -57,132 +74,103 @@ class PersistantSocket:
                 pass
             self.sock = None
 
-    def _open(self):
+    def _open(self) -> socket.socket:
         return get_ipc_socket(self.ipc_path)
 
-    def reset(self):
+    def reset(self) -> socket.socket:
         self.sock.close()
         self.sock = self._open()
         return self.sock
 
 
-def get_default_ipc_path():
-    if sys.platform == 'darwin':
-        ipc_path = os.path.expanduser(os.path.join(
-            "~",
-            "Library",
-            "Ethereum",
-            "geth.ipc"
-        ))
-        if os.path.exists(ipc_path):
-            return ipc_path
-
-        ipc_path = os.path.expanduser(os.path.join(
-            "~",
-            "Library",
-            "Application Support",
-            "io.parity.ethereum",
-            "jsonrpc.ipc"
-        ))
-        if os.path.exists(ipc_path):
-            return ipc_path
-
-        base_trinity_path = Path('~').expanduser() / '.local' / 'share' / 'trinity'
-        ipc_path = base_trinity_path / 'mainnet' / 'jsonrpc.ipc'
-        if ipc_path.exists():
-            return str(ipc_path)
-
-    elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
-        ipc_path = os.path.expanduser(os.path.join(
-            "~",
-            ".ethereum",
-            "geth.ipc"
-        ))
-        if os.path.exists(ipc_path):
-            return ipc_path
-
-        ipc_path = os.path.expanduser(os.path.join(
-            "~",
-            ".local",
-            "share",
-            "io.parity.ethereum",
-            "jsonrpc.ipc"
-        ))
-        if os.path.exists(ipc_path):
-            return ipc_path
-
-        base_trinity_path = Path('~').expanduser() / '.local' / 'share' / 'trinity'
-        ipc_path = base_trinity_path / 'mainnet' / 'jsonrpc.ipc'
-        if ipc_path.exists():
-            return str(ipc_path)
-
-    elif sys.platform == 'win32':
-        ipc_path = os.path.join(
-            "\\\\",
-            ".",
-            "pipe",
-            "geth.ipc"
+# type ignored b/c missing return statement is by design here
+def get_default_ipc_path() -> str:  # type: ignore
+    if sys.platform == "darwin":
+        ipc_path = os.path.expanduser(
+            os.path.join("~", "Library", "Ethereum", "geth.ipc")
         )
         if os.path.exists(ipc_path):
             return ipc_path
 
-        ipc_path = os.path.join(
-            "\\\\",
-            ".",
-            "pipe",
-            "jsonrpc.ipc"
+        ipc_path = os.path.expanduser(
+            os.path.join(
+                "~",
+                "Library",
+                "Application Support",
+                "io.parity.ethereum",
+                "jsonrpc.ipc",
+            )
         )
+        if os.path.exists(ipc_path):
+            return ipc_path
+
+        base_trinity_path = Path("~").expanduser() / ".local" / "share" / "trinity"
+        ipc_path = str(base_trinity_path / "mainnet" / "ipcs-eth1" / "jsonrpc.ipc")
+        if Path(ipc_path).exists():
+            return str(ipc_path)
+
+    elif sys.platform.startswith("linux") or sys.platform.startswith("freebsd"):
+        ipc_path = os.path.expanduser(os.path.join("~", ".ethereum", "geth.ipc"))
+        if os.path.exists(ipc_path):
+            return ipc_path
+
+        ipc_path = os.path.expanduser(
+            os.path.join("~", ".local", "share", "io.parity.ethereum", "jsonrpc.ipc")
+        )
+        if os.path.exists(ipc_path):
+            return ipc_path
+
+        base_trinity_path = Path("~").expanduser() / ".local" / "share" / "trinity"
+        ipc_path = str(base_trinity_path / "mainnet" / "ipcs-eth1" / "jsonrpc.ipc")
+        if Path(ipc_path).exists():
+            return str(ipc_path)
+
+    elif sys.platform == "win32":
+        ipc_path = os.path.join("\\\\", ".", "pipe", "geth.ipc")
+        if os.path.exists(ipc_path):
+            return ipc_path
+
+        ipc_path = os.path.join("\\\\", ".", "pipe", "jsonrpc.ipc")
         if os.path.exists(ipc_path):
             return ipc_path
 
     else:
         raise ValueError(
-            "Unsupported platform '{0}'.  Only darwin/linux/win32/freebsd are "
-            "supported.  You must specify the ipc_path".format(sys.platform)
+            f"Unsupported platform '{sys.platform}'.  Only darwin/linux/win32/"
+            "freebsd are supported.  You must specify the ipc_path"
         )
 
 
-def get_dev_ipc_path():
-    if sys.platform == 'darwin':
-        tmpdir = os.environ.get('TMPDIR', '')
-        ipc_path = os.path.expanduser(os.path.join(
-            tmpdir,
-            "geth.ipc"
-        ))
+# type ignored b/c missing return statement is by design here
+def get_dev_ipc_path() -> str:  # type: ignore
+    if os.environ.get("WEB3_PROVIDER_URI", ""):
+        ipc_path = os.environ.get("WEB3_PROVIDER_URI")
+        if os.path.exists(ipc_path):
+            return ipc_path
+    elif sys.platform == "darwin":
+        tmpdir = os.environ.get("TMPDIR", "")
+        ipc_path = os.path.expanduser(os.path.join(tmpdir, "geth.ipc"))
         if os.path.exists(ipc_path):
             return ipc_path
 
-    elif sys.platform.startswith('linux') or sys.platform.startswith('freebsd'):
-        ipc_path = os.path.expanduser(os.path.join(
-            "/tmp",
-            "geth.ipc"
-        ))
+    elif sys.platform.startswith("linux") or sys.platform.startswith("freebsd"):
+        ipc_path = os.path.expanduser(os.path.join("/tmp", "geth.ipc"))
         if os.path.exists(ipc_path):
             return ipc_path
 
-    elif sys.platform == 'win32':
-        ipc_path = os.path.join(
-            "\\\\",
-            ".",
-            "pipe",
-            "geth.ipc"
-        )
+    elif sys.platform == "win32":
+        ipc_path = os.path.join("\\\\", ".", "pipe", "geth.ipc")
         if os.path.exists(ipc_path):
             return ipc_path
 
-        ipc_path = os.path.join(
-            "\\\\",
-            ".",
-            "pipe",
-            "jsonrpc.ipc"
-        )
+        ipc_path = os.path.join("\\\\", ".", "pipe", "jsonrpc.ipc")
         if os.path.exists(ipc_path):
             return ipc_path
 
     else:
         raise ValueError(
-            "Unsupported platform '{0}'.  Only darwin/linux/win32/freebsd are "
-            "supported.  You must specify the ipc_path".format(sys.platform)
+            f"Unsupported platform '{sys.platform}'.  Only darwin/linux/win32/"
+            "freebsd are supported.  You must specify the ipc_path"
         )
 
 
@@ -190,22 +178,32 @@ class IPCProvider(JSONBaseProvider):
     logger = logging.getLogger("web3.providers.IPCProvider")
     _socket = None
 
-    def __init__(self, ipc_path=None, timeout=10, *args, **kwargs):
+    def __init__(
+        self,
+        ipc_path: Union[str, Path] = None,
+        timeout: int = 10,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         if ipc_path is None:
             self.ipc_path = get_default_ipc_path()
+        elif isinstance(ipc_path, str) or isinstance(ipc_path, Path):
+            self.ipc_path = str(Path(ipc_path).expanduser().resolve())
         else:
-            if isinstance(ipc_path, Path):
-                ipc_path = str(ipc_path.resolve())
-            self.ipc_path = ipc_path
+            raise TypeError("ipc_path must be of type string or pathlib.Path")
 
         self.timeout = timeout
         self._lock = threading.Lock()
         self._socket = PersistantSocket(self.ipc_path)
-        super().__init__(*args, **kwargs)
+        super().__init__()
 
-    def make_request(self, method, params):
-        self.logger.debug("Making request IPC. Path: %s, Method: %s",
-                          self.ipc_path, method)
+    def __str__(self) -> str:
+        return f"<{self.__class__.__name__} {self.ipc_path}>"
+
+    def make_request(self, method: RPCEndpoint, params: Any) -> RPCResponse:
+        self.logger.debug(
+            f"Making request IPC. Path: {self.ipc_path}, Method: {method}"
+        )
         request = self.encode_rpc_request(method, params)
 
         with self._lock, self._socket as sock:
@@ -240,7 +238,7 @@ class IPCProvider(JSONBaseProvider):
 
 
 # A valid JSON RPC response can only end in } or ] http://www.jsonrpc.org/specification
-def has_valid_json_rpc_ending(raw_response):
+def has_valid_json_rpc_ending(raw_response: bytes) -> bool:
     stripped_raw_response = raw_response.rstrip()
     for valid_ending in [b"}", b"]"]:
         if stripped_raw_response.endswith(valid_ending):

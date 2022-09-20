@@ -2,7 +2,7 @@
 
 A Python implementation of NewChain Web3 which is forked from https://github.com/ethereum/web3.py.
 
-* Python 3.6+ support
+* Python 3.7.2+ support
 
 ## Developer Setup
 
@@ -84,7 +84,7 @@ You can use `pytest-watch`, running one for every Python environment:
 pip install pytest-watch
 
 cd venv
-ptw --onfail "notify-send -t 5000 'Test failure ⚠⚠⚠⚠⚠' 'python 3 test on web3.py failed'" ../tests ../web3
+ptw --onfail "notify-send -t 5000 'Test failure ⚠⚠⚠⚠⚠' 'python 3 test on web3.py failed'" ../tests ../newchain_web3
 ```
 
 Or, you can run multi-process tests in one command, but without color:

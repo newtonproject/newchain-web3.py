@@ -4,7 +4,7 @@ Your Ethereum Node
 .. _why_need_connection:
 
 Why do I need to connect to a node?
---------------------------------------
+-----------------------------------
 
 The Ethereum protocol defines a way for people to interact with
 smart contracts and each other over a network.
@@ -19,7 +19,7 @@ not run its own node internally.
 .. _choosing_node:
 
 How do I choose which node to use?
---------------------------------------
+----------------------------------
 
 Due to the nature of Ethereum, this is largely a question of personal preference, but
 it has significant ramifications on security and usability. Further, node software is
@@ -62,8 +62,8 @@ work around this issue is to use a hosted node.
 The most popular hosted node option is `Infura <infura.io>`_.
 You can connect to it as if it were a local node,
 with a few caveats. It cannot (and *should not*) host private keys for
-you, meaning that some common methods like :meth:`w3.eth.sendTransaction()
-<web3.eth.Eth.sendTransaction>` are not directly available. To send transactions
+you, meaning that some common methods like :meth:`w3.eth.send_transaction()
+<web3.eth.Eth.send_transaction>` are not directly available. To send transactions
 to a hosted node, read about :ref:`eth-account`.
 
 Once you decide what node option you want, you need to choose which network to connect to.
@@ -71,7 +71,7 @@ Typically, you are choosing between the main network and one of the available te
 See :ref:`choosing_network`
 
 Can I use MetaMask as a node?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 MetaMask is not a node. It is an interface for interacting with a node.
 Roughly, it's what you get if you turn Web3.py into a browser extension.
@@ -85,7 +85,7 @@ If you are trying to use accounts that were already created in MetaMask, see
 .. _choosing_network:
 
 Which network should I connect to?
-------------------------------------
+----------------------------------
 
 Once you have answered :ref:`choosing_node` you have to pick which network
 to connect to. This is easy for some scenarios: if you have ether and you want
@@ -99,8 +99,8 @@ However, spam and mining attacks have happened,
 which is disruptive when you want to test out a contract.
 
 There are some alternative networks that limit the damage of spam attacks, but
-they are not standardized across node software. Geth runs their own (Rinkeby),
-and Parity runs their own (Kovan). See a full comparison in this `Stackexchange Q&A
+they are not standardized across node software. Geth runs their own (Rinkeby).
+See a full comparison in this `Stackexchange Q&A
 <https://ethereum.stackexchange.com/a/30072/1461>`_.
 
 So roughly, choose this way:

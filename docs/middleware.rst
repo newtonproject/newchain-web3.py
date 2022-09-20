@@ -15,12 +15,14 @@ that are in deeper layers).
 More information is available in the "Internals: :ref:`internals__middlewares`" section.
 
 
+.. _default_middleware:
+
 Default Middleware
 ------------------
 
 Some middlewares are added by default if you do not supply any. The defaults
 are likely to change regularly, so this list may not include the latest version's defaults.
-You can find the latest defaults in the constructor in `web3/manager.py`
+You can find the latest defaults in the constructor in ``web3/manager.py``
 
 AttributeDict
 ~~~~~~~~~~~~~~~~~~
@@ -28,8 +30,8 @@ AttributeDict
 .. py:method:: web3.middleware.attrdict_middleware
 
     This middleware converts the output of a function from a dictionary to an ``AttributeDict``
-    which enables dot-syntax access, like ``eth.getBlock('latest').number``
-    in addition to ``eth.getBlock('latest')['number']``.
+    which enables dot-syntax access, like ``eth.get_block('latest').number``
+    in addition to ``eth.get_block('latest')['number']``.
 
 .eth Name Resolution
 ~~~~~~~~~~~~~~~~~~~~~
@@ -37,7 +39,7 @@ AttributeDict
 .. py:method:: web3.middleware.name_to_address_middleware
 
     This middleware converts Ethereum Name Service (ENS) names into the
-    address that the name points to. For example :meth:`~web3.Eth.sendTransaction` will
+    address that the name points to. For example :meth:`w3.eth.send_transaction <web3.eth.Eth.send_transaction>` will
     accept .eth names in the 'from' and 'to' fields.
 
 .. note::
@@ -59,8 +61,24 @@ Gas Price Strategy
 
 .. py:method:: web3.middleware.gas_price_strategy_middleware
 
-    This adds a gasPrice to transactions if applicable and when a gas price strategy has
-    been set. See :ref:`Gas_Price` for information about how gas price is derived.
+  .. warning::
+
+      Gas price strategy is only supported for legacy transactions. The London fork
+      introduced ``maxFeePerGas`` and ``maxPriorityFeePerGas`` transaction parameters
+      which should be used over ``gasPrice`` whenever possible.
+
+  This adds a gasPrice to transactions if applicable and when a gas price strategy has
+  been set. See :ref:`Gas_Price` for information about how gas price is derived.
+
+Buffered Gas Estimate
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. py:method:: web3.middleware.buffered_gas_estimate_middleware
+
+    This adds a gas estimate to transactions if ``gas`` is not present in the transaction
+    parameters. Sets gas to:
+    ``min(w3.eth.estimate_gas + gas_buffer, gas_limit)``
+    where the gas_buffer default is 100,000
 
 HTTPRequestRetry
 ~~~~~~~~~~~~~~~~~~
@@ -68,10 +86,10 @@ HTTPRequestRetry
 .. py:method:: web3.middleware.http_retry_request_middleware
 
     This middleware is a default specifically for HTTPProvider that retries failed
-    requests that return the following errors: `ConnectionError`, `HTTPError`, `Timeout`,
-    `TooManyRedirects`. Additionally there is a whitelist that only allows certain
+    requests that return the following errors: ``ConnectionError``, ``HTTPError``, ``Timeout``,
+    ``TooManyRedirects``. Additionally there is a whitelist that only allows certain
     methods to be retried in order to not resend transactions, excluded methods are:
-    `eth_sendTransaction`, `personal_signAndSendTransaction`, `personal_sendTransaction`.
+    ``eth_sendTransaction``, ``personal_signAndSendTransaction``, ``personal_sendTransaction``.
 
 .. _Modifying_Middleware:
 
@@ -147,7 +165,7 @@ below for the API.
 
 When specifying middlewares in a list, or retrieving the list of middlewares, they will
 be returned in the order of outermost layer first and innermost layer last. In the above
-example, that means that ``list(w3.middleware_onion)`` would return the middlewares in
+example, that means that ``w3.middleware_onion.middlewares`` would return the middlewares in
 the order of: ``[2, 1, 0]``.
 
 See "Internals: :ref:`internals__middlewares`" for a deeper dive to how middlewares work.
@@ -230,6 +248,24 @@ To add or remove items in different layers, use the following API:
         >>> w3.middleware_onion.clear()
         >>> assert len(w3.middleware_onion) == 0
 
+.. py:attribute:: Web3.middleware_onion.middlewares
+
+    Return all the current middlewares for the ``Web3`` instance in the appropriate order for importing into a new
+    ``Web3`` instance.
+
+    .. code-block:: python
+
+        >>> w3_1 = Web3(...)
+        # add uniquely named middleware:
+        >>> w3_1.middleware_onion.add(web3.middleware.pythonic_middleware, 'test_middleware')
+        # export middlewares from first w3 instance
+        >>> middlewares = w3_1.middleware_onion.middlewares
+
+        # import into second instance
+        >>> w3_2 = Web3(..., middlewares=middlewares)
+        >>> assert w3_1.middleware_onion.middlewares == w3_2.middleware_onion.middlewares
+        >>> assert w3_2.middleware_onion.get('test_middleware')
+
 
 Optional Middleware
 -----------------------
@@ -270,7 +306,7 @@ Stalecheck
 
     If the latest block in the blockchain is older than 2 days in this example, then the
     middleware will raise a ``StaleBlockchain`` exception on every call except
-    ``web3.eth.getBlock()``.
+    ``web3.eth.get_block()``.
 
 
 Cache
@@ -308,8 +344,11 @@ All of the caching middlewares accept these common arguments.
 .. py:method:: web3.middleware.construct_latest_block_based_cache_middleware(cache_class, average_block_time_sample_size, default_average_block_time, rpc_whitelist, should_cache_fn)
 
     Constructs a middleware which will cache the return values for any RPC
-    method in the ``rpc_whitelist`` for an amount of time defined by
-    ``cache_expire_seconds``.
+    method in the ``rpc_whitelist`` for the latest block.
+    It avoids re-fetching the current latest block for each
+    request by tracking the current average block time and only requesting
+    a new block when the last seen latest block is older than the average
+    block time.
 
     * ``average_block_time_sample_size`` The number of blocks which should be
       sampled to determine the average block time.
@@ -322,10 +361,25 @@ All of the caching middlewares accept these common arguments.
 
 .. _geth-poa:
 
-Geth-style Proof of Authority
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Proof of Authority
+~~~~~~~~~~~~~~~~~~
 
-This middleware is required to connect to ``geth --dev`` or the Rinkeby public network.
+.. note::
+    It's important to inject the middleware at the 0th layer of the middleware onion:
+    `w3.middleware_onion.inject(geth_poa_middleware, layer=0)`
+
+The ``geth_poa_middleware`` is required to connect to ``geth --dev`` or the Rinkeby
+public network. It may also be needed for other EVM compatible blockchains like Polygon
+or BNB Chain (Binance Smart Chain).
+
+If the middleware is not injected at the 0th layer of the middleware onion, you may get
+errors like the example below when interacting with your EVM node.
+
+```web3.exceptions.ExtraDataLengthError: The field extraData is 97 bytes, but should be
+32. It is quite likely that you are connected to a POA chain. Refer to
+http://web3py.readthedocs.io/en/stable/middleware.html#proof-of-authority
+for more details. The full extraData is: HexBytes('...')```
+
 
 The easiest way to connect to a default ``geth --dev`` instance which loads the middleware is:
 
@@ -335,12 +389,11 @@ The easiest way to connect to a default ``geth --dev`` instance which loads the 
     >>> from newchain_web3.auto.gethdev import w3
 
     # confirm that the connection succeeded
-    >>> w3.version.node
+    >>> w3.clientVersion
     'Geth/v1.7.3-stable-4bb3c89d/linux-amd64/go1.9'
 
 This example connects to a local ``geth --dev`` instance on Linux with a
 unique IPC location and loads the middleware:
-
 
 .. code-block:: python
 
@@ -351,11 +404,11 @@ unique IPC location and loads the middleware:
 
     >>> from newchain_web3.middleware import geth_poa_middleware
 
-    # inject the poa compatibility middleware to the innermost layer
+    # inject the poa compatibility middleware to the innermost layer (0th layer)
     >>> w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     # confirm that the connection succeeded
-    >>> w3.version.node
+    >>> w3.clientVersion
     'Geth/v1.7.3-stable-4bb3c89d/linux-amd64/go1.9'
 
 Why is ``geth_poa_middleware`` necessary?
@@ -376,14 +429,16 @@ Locally Managed Log and Block Filters
 
 This middleware provides an alternative to ethereum node managed filters. When used, Log and
 Block filter logic are handled locally while using the same web3 filter api. Filter results are
-retrieved using JSON-RPC endpoints that don't rely on server state. 
+retrieved using JSON-RPC endpoints that don't rely on server state.
 
-.. code-block:: python
+.. doctest::
 
     >>> from newchain_web3 import Web3, EthereumTesterProvider
-    >>> w3 = Web3(EthereumTesterProvider)
+    >>> w3 = Web3(EthereumTesterProvider())
     >>> from newchain_web3.middleware import local_filter_middleware
-    >>> w3.middleware_onion.add(local_filter_middleware())
+    >>> w3.middleware_onion.add(local_filter_middleware)
+
+.. code-block:: python
 
     #  Normal block and log filter apis behave as before.
     >>> block_filter = w3.eth.filter("latest")
@@ -395,8 +450,10 @@ Signing
 
 .. py:method:: web3.middleware.construct_sign_and_send_raw_middleware(private_key_or_account)
 
-This middleware automatically captures transactions, signs them, and sends them as raw transactions. The from field on the transaction, or ``w3.eth.defaultAccount`` must be set to the address of the private key for this middleware to have any effect.
- 
+This middleware automatically captures transactions, signs them, and sends them as raw transactions.
+The ``from`` field on the transaction, or ``w3.eth.default_account`` must be set to the address of the private key for
+this middleware to have any effect.
+
    * ``private_key_or_account`` A single private key or a tuple, list or set of private keys.
 
       Keys can be in any of the following formats:
@@ -413,5 +470,50 @@ This middleware automatically captures transactions, signs them, and sends them 
    >>> from newchain_account import Account
    >>> acct = Account.create('KEYSMASH FJAFJKLDSKF7JKFDJ 1530')
    >>> w3.middleware_onion.add(construct_sign_and_send_raw_middleware(acct))
-   >>> w3.eth.defaultAccount = acct.address
-   # Now you can send a tx from acct.address without having to build and sign each raw transaction
+   >>> w3.eth.default_account = acct.address
+
+:ref:`Hosted nodes<local_vs_hosted>` (like Infura or Alchemy) only support signed transactions. This often results in ``send_raw_transaction`` being used repeatedly. Instead, we can automate this process with ``construct_sign_and_send_raw_middleware(private_key_or_account)``.
+
+.. code-block:: python
+
+    >>> from newchain_web3 import Web3
+    >>> w3 = Web3(Web3.HTTPProvider('HTTP_ENDPOINT'))
+    >>> from newchain_web3.middleware import construct_sign_and_send_raw_middleware
+    >>> from newchain_account import Account
+    >>> import os
+    >>> acct = w3.eth.account.from_key(os.environ.get('PRIVATE_KEY'))
+    >>> w3.middleware_onion.add(construct_sign_and_send_raw_middleware(acct))
+    >>> w3.eth.default_account = acct.address
+
+Now you can send a transaction from acct.address without having to build and sign each raw transaction.
+
+When making use of this signing middleware, when sending dynamic fee transactions (recommended over legacy transactions),
+the transaction ``type`` of ``2`` (or ``'0x2'``) is necessary. This is because transaction signing is validated based
+on the transaction ``type`` parameter. This value defaults to ``'0x2'`` when ``maxFeePerGas`` and / or
+``maxPriorityFeePerGas`` are present as parameters in the transaction as these params imply a dynamic fee transaction.
+Since these values effectively replace the legacy ``gasPrice`` value, do not set a ``gasPrice`` for dynamic fee transactions.
+Doing so will lead to validation issues.
+
+.. code-block:: python
+
+   # dynamic fee transaction, introduced by EIP-1559:
+   >>> dynamic_fee_transaction = {
+   ...     'type': '0x2',  # optional - defaults to '0x2' when dynamic fee transaction params are present
+   ...     'from': acct.address,  # optional if w3.eth.default_account was set with acct.address
+   ...     'to': receiving_account_address,
+   ...     'value': 22,
+   ...     'maxFeePerGas': 2000000000,  # required for dynamic fee transactions
+   ...     'maxPriorityFeePerGas': 1000000000,  # required for dynamic fee transactions
+   ... }
+   >>> w3.eth.send_transaction(dynamic_fee_transaction)
+
+A legacy transaction still works in the same way as it did before EIP-1559 was introduced:
+
+.. code-block:: python
+
+   >>> legacy_transaction = {
+   ...     'to': receiving_account_address,
+   ...     'value': 22,
+   ...     'gasPrice': 123456,  # optional - if not provided, gas_price_strategy (if exists) or eth_gasPrice is used
+   ... }
+   >>> w3.eth.send_transaction(legacy_transaction)

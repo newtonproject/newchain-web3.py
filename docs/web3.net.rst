@@ -1,10 +1,7 @@
 Net API
-===========
+=======
 
 .. py:module:: web3.net
-.. py:currentmodule:: web3.net
-
-.. py:class:: Net
 
 The ``web3.net`` object exposes methods to interact with the RPC APIs under
 the ``net_`` namespace.
@@ -15,29 +12,38 @@ Properties
 
 The following properties are available on the ``web3.net`` namespace.
 
-.. py:method:: Net.chainId(self)
+.. py:method:: listening
+  :property:
 
-    This method is trivially implemented.
-    It will always return `None`, which is a valid chainId to specify in the transaction.
+    * Delegates to ``net_listening`` RPC method
 
-    If you want the real chainId of your node, you must manually determine it for now.
-
-    Note that your transactions (may be) replayable on forks of the network you intend, if
-    :ref:`eth-account` and using a chainId of `None`.
+    Returns true if client is actively listening for network connections.
 
     .. code-block:: python
 
-        >>> web3.net.chainId
-        None
+        >>> web3.net.listening
+        True
 
-.. py:method:: Net.version(self)
+.. py:method:: peer_count
+  :property:
+
+    * Delegates to ``net_peerCount`` RPC method
+
+    Returns number of peers currently connected to the client.
+
+    .. code-block:: python
+
+        >>> web3.net.peer_count
+        1
+
+.. py:method:: version
+  :property:
 
     * Delegates to ``net_version`` RPC Method
 
-    Returns the current network chainId/version.
+    Returns the current network id.
 
     .. code-block:: python
 
         >>> web3.net.version
-        1
-
+        '8996'

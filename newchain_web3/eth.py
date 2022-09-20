@@ -1,10 +1,36 @@
+import asyncio
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    List,
+    NoReturn,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+    cast,
+    overload,
+)
+import warnings
+
 from newchain_account import (
     Account,
 )
+from eth_typing import (
+    Address,
+    BlockNumber,
+    ChecksumAddress,
+    HexStr,
+)
 from eth_utils import (
-    apply_to_return_value,
     is_checksum_address,
     is_string,
+)
+from eth_utils.toolz import (
+    assoc,
+    merge,
 )
 from hexbytes import (
     HexBytes,
@@ -17,391 +43,943 @@ from newchain_web3._utils.decorators import (
     deprecated_for,
 )
 from newchain_web3._utils.empty import (
+    Empty,
     empty,
 )
 from newchain_web3._utils.encoding import (
     to_hex,
 )
+from newchain_web3._utils.fee_utils import (
+    async_fee_history_priority_fee,
+    fee_history_priority_fee,
+)
 from newchain_web3._utils.filters import (
-    BlockFilter,
-    LogFilter,
-    TransactionFilter,
+    select_filter_method,
+)
+from newchain_web3._utils.rpc_abi import (
+    RPC,
 )
 from newchain_web3._utils.threads import (
     Timeout,
 )
-from newchain_web3._utils.toolz import (
-    assoc,
-    merge,
-)
+# from newchain_web3._utils.toolz import (
+#     assoc,
+#     merge,
+# )
 from newchain_web3._utils.transactions import (
     assert_valid_transaction_params,
     extract_valid_transaction_params,
-    get_buffered_gas_estimate,
     get_required_transaction,
     replace_transaction,
-    wait_for_transaction_receipt,
 )
 from newchain_web3.contract import (
+    AsyncContract,
+    AsyncContractCaller,
     Contract,
+    ContractCaller,
 )
 from newchain_web3.exceptions import (
+    OffchainLookup,
     TimeExhausted,
+    TooManyRequests,
+    TransactionNotFound,
 )
-from newchain_web3.iban import (
-    Iban,
+from newchain_web3.method import (
+    Method,
+    default_root_munger,
 )
 from newchain_web3.module import (
     Module,
 )
+from newchain_web3.types import (
+    ENS,
+    BlockData,
+    BlockIdentifier,
+    BlockParams,
+    CallOverride,
+    FeeHistory,
+    FilterParams,
+    GasPriceStrategy,
+    LogReceipt,
+    MerkleProof,
+    Nonce,
+    SignedTx,
+    SyncStatus,
+    TxData,
+    TxParams,
+    TxReceipt,
+    Uncle,
+    Wei,
+    _Hash32,
+)
+from newchain_web3.utils import (
+    async_handle_offchain_lookup,
+    handle_offchain_lookup,
+)
 
 
-class Eth(Module):
-    account = Account()
-    defaultAccount = empty
-    defaultBlock = "latest"
-    defaultContractFactory = Contract
-    iban = Iban
+class BaseEth(Module):
+    _default_account: Union[ChecksumAddress, Empty] = empty
+    _default_block: BlockIdentifier = "latest"
     gasPriceStrategy = None
+    account = Account()
+    defaultContractFactory: Any = None
 
-    @deprecated_for("doing nothing at all")
-    def enable_unaudited_features(self):
-        pass
-
-    def namereg(self):
-        raise NotImplementedError()
-
-    def icapNamereg(self):
-        raise NotImplementedError()
+    _gas_price: Method[Callable[[], Wei]] = Method(
+        RPC.eth_gasPrice,
+        is_property=True,
+    )
 
     @property
-    def protocolVersion(self):
-        return self.web3.manager.request_blocking("eth_protocolVersion", [])
+    def default_block(self) -> BlockIdentifier:
+        return self._default_block
+
+    @default_block.setter
+    def default_block(self, value: BlockIdentifier) -> None:
+        self._default_block = value
 
     @property
-    def syncing(self):
-        return self.web3.manager.request_blocking("eth_syncing", [])
+    def default_account(self) -> Union[ChecksumAddress, Empty]:
+        return self._default_account
 
-    @property
-    def coinbase(self):
-        return self.web3.manager.request_blocking("eth_coinbase", [])
+    @default_account.setter
+    def default_account(self, account: Union[ChecksumAddress, Empty]) -> None:
+        self._default_account = account
 
-    @property
-    def mining(self):
-        return self.web3.manager.request_blocking("eth_mining", [])
+    def send_transaction_munger(self, transaction: TxParams) -> Tuple[TxParams]:
+        if "from" not in transaction and is_checksum_address(self.default_account):
+            transaction = assoc(transaction, "from", self.default_account)
 
-    @property
-    def hashrate(self):
-        return self.web3.manager.request_blocking("eth_hashrate", [])
+        return (transaction,)
 
-    @property
-    def gasPrice(self):
-        return self.web3.manager.request_blocking("eth_gasPrice", [])
+    _send_transaction: Method[Callable[[TxParams], HexBytes]] = Method(
+        RPC.eth_sendTransaction, mungers=[send_transaction_munger]
+    )
 
-    @property
-    def accounts(self):
-        return self.web3.manager.request_blocking("eth_accounts", [])
+    _send_raw_transaction: Method[Callable[[Union[HexStr, bytes]], HexBytes]] = Method(
+        RPC.eth_sendRawTransaction,
+        mungers=[default_root_munger],
+    )
 
-    @property
-    def blockNumber(self):
-        return self.web3.manager.request_blocking("eth_blockNumber", [])
+    _get_transaction: Method[Callable[[_Hash32], TxData]] = Method(
+        RPC.eth_getTransactionByHash, mungers=[default_root_munger]
+    )
 
-    def getBalance(self, account, block_identifier=None):
-        if block_identifier is None:
-            block_identifier = self.defaultBlock
-        return self.web3.manager.request_blocking(
-            "eth_getBalance",
-            [account, block_identifier],
-        )
+    _get_raw_transaction: Method[Callable[[_Hash32], HexBytes]] = Method(
+        RPC.eth_getRawTransactionByHash, mungers=[default_root_munger]
+    )
 
-    def getStorageAt(self, account, position, block_identifier=None):
-        if block_identifier is None:
-            block_identifier = self.defaultBlock
-        return self.web3.manager.request_blocking(
-            "eth_getStorageAt",
-            [account, position, block_identifier]
-        )
+    """
+    `eth_getRawTransactionByBlockHashAndIndex`
+    `eth_getRawTransactionByBlockNumberAndIndex`
+    """
+    _get_raw_transaction_by_block: Method[
+        Callable[[BlockIdentifier, int], HexBytes]
+    ] = Method(
+        method_choice_depends_on_args=select_method_for_block_identifier(
+            if_predefined=RPC.eth_getRawTransactionByBlockNumberAndIndex,
+            if_hash=RPC.eth_getRawTransactionByBlockHashAndIndex,
+            if_number=RPC.eth_getRawTransactionByBlockNumberAndIndex,
+        ),
+        mungers=[default_root_munger],
+    )
 
-    def getCode(self, account, block_identifier=None):
-        if block_identifier is None:
-            block_identifier = self.defaultBlock
-        return self.web3.manager.request_blocking(
-            "eth_getCode",
-            [account, block_identifier],
-        )
+    def _generate_gas_price(
+        self, transaction_params: Optional[TxParams] = None
+    ) -> Optional[Wei]:
+        if self.gasPriceStrategy:
+            return self.gasPriceStrategy(self.w3, transaction_params)
+        return None
 
-    def getBlock(self, block_identifier, full_transactions=False):
-        """
-        `eth_getBlockByHash`
-        `eth_getBlockByNumber`
-        """
-        method = select_method_for_block_identifier(
-            block_identifier,
-            if_predefined='eth_getBlockByNumber',
-            if_hash='eth_getBlockByHash',
-            if_number='eth_getBlockByNumber',
-        )
+    def set_gas_price_strategy(self, gas_price_strategy: GasPriceStrategy) -> None:
+        self.gasPriceStrategy = gas_price_strategy
 
-        return self.web3.manager.request_blocking(
-            method,
-            [block_identifier, full_transactions],
-        )
-
-    def getBlockTransactionCount(self, block_identifier):
-        """
-        `eth_getBlockTransactionCountByHash`
-        `eth_getBlockTransactionCountByNumber`
-        """
-        method = select_method_for_block_identifier(
-            block_identifier,
-            if_predefined='eth_getBlockTransactionCountByNumber',
-            if_hash='eth_getBlockTransactionCountByHash',
-            if_number='eth_getBlockTransactionCountByNumber',
-        )
-        return self.web3.manager.request_blocking(
-            method,
-            [block_identifier],
-        )
-
-    def getUncleCount(self, block_identifier):
-        """
-        `eth_getUncleCountByBlockHash`
-        `eth_getUncleCountByBlockNumber`
-        """
-        method = select_method_for_block_identifier(
-            block_identifier,
-            if_predefined='eth_getUncleCountByBlockNumber',
-            if_hash='eth_getUncleCountByBlockHash',
-            if_number='eth_getUncleCountByBlockNumber',
-        )
-        return self.web3.manager.request_blocking(
-            method,
-            [block_identifier],
-        )
-
-    def getUncleByBlock(self, block_identifier, uncle_index):
-        """
-        `eth_getUncleByBlockHashAndIndex`
-        `eth_getUncleByBlockNumberAndIndex`
-        """
-        method = select_method_for_block_identifier(
-            block_identifier,
-            if_predefined='eth_getUncleByBlockNumberAndIndex',
-            if_hash='eth_getUncleByBlockHashAndIndex',
-            if_number='eth_getUncleByBlockNumberAndIndex',
-        )
-        return self.web3.manager.request_blocking(
-            method,
-            [block_identifier, uncle_index],
-        )
-
-    def getTransaction(self, transaction_hash):
-        return self.web3.manager.request_blocking(
-            "eth_getTransactionByHash",
-            [transaction_hash],
-        )
-
-    @deprecated_for("w3.eth.getTransactionByBlock")
-    def getTransactionFromBlock(self, block_identifier, transaction_index):
-        """
-        Alias for the method getTransactionByBlock
-        Depreceated to maintain naming consistency with the json-rpc API
-        """
-        return self.getTransactionByBlock(block_identifier, transaction_index)
-
-    def getTransactionByBlock(self, block_identifier, transaction_index):
-        """
-        `eth_getTransactionByBlockHashAndIndex`
-        `eth_getTransactionByBlockNumberAndIndex`
-        """
-        method = select_method_for_block_identifier(
-            block_identifier,
-            if_predefined='eth_getTransactionByBlockNumberAndIndex',
-            if_hash='eth_getTransactionByBlockHashAndIndex',
-            if_number='eth_getTransactionByBlockNumberAndIndex',
-        )
-        return self.web3.manager.request_blocking(
-            method,
-            [block_identifier, transaction_index],
-        )
-
-    def waitForTransactionReceipt(self, transaction_hash, timeout=120):
-        try:
-            return wait_for_transaction_receipt(self.web3, transaction_hash, timeout)
-        except Timeout:
-            raise TimeExhausted(
-                "Transaction {} is not in the chain, after {} seconds".format(
-                    transaction_hash,
-                    timeout,
-                )
-            )
-
-    def getTransactionReceipt(self, transaction_hash):
-        return self.web3.manager.request_blocking(
-            "eth_getTransactionReceipt",
-            [transaction_hash],
-        )
-
-    def getTransactionCount(self, account, block_identifier=None):
-        if block_identifier is None:
-            block_identifier = self.defaultBlock
-        return self.web3.manager.request_blocking(
-            "eth_getTransactionCount",
-            [
-                account,
-                block_identifier,
-            ],
-        )
-
-    def replaceTransaction(self, transaction_hash, new_transaction):
-        current_transaction = get_required_transaction(self.web3, transaction_hash)
-        return replace_transaction(self.web3, current_transaction, new_transaction)
-
-    def modifyTransaction(self, transaction_hash, **transaction_params):
-        assert_valid_transaction_params(transaction_params)
-        current_transaction = get_required_transaction(self.web3, transaction_hash)
-        current_transaction_params = extract_valid_transaction_params(current_transaction)
-        new_transaction = merge(current_transaction_params, transaction_params)
-        return replace_transaction(self.web3, current_transaction, new_transaction)
-
-    def sendTransaction(self, transaction):
-        # TODO: move to middleware
-        if 'from' not in transaction and is_checksum_address(self.defaultAccount):
-            transaction = assoc(transaction, 'from', self.defaultAccount)
-
-        # TODO: move gas estimation in middleware
-        if 'gas' not in transaction:
-            transaction = assoc(
-                transaction,
-                'gas',
-                get_buffered_gas_estimate(self.web3, transaction),
-            )
-
-        return self.web3.manager.request_blocking(
-            "eth_sendTransaction",
-            [transaction],
-        )
-
-    def sendRawTransaction(self, raw_transaction):
-        return self.web3.manager.request_blocking(
-            "eth_sendRawTransaction",
-            [raw_transaction],
-        )
-
-    def sign(self, account, data=None, hexstr=None, text=None):
-        message_hex = to_hex(data, hexstr=hexstr, text=text)
-        return self.web3.manager.request_blocking(
-            "eth_sign", [account, message_hex],
-        )
-
-    @apply_to_return_value(HexBytes)
-    def call(self, transaction, block_identifier=None):
-        # TODO: move to middleware
-        if 'from' not in transaction and is_checksum_address(self.defaultAccount):
-            transaction = assoc(transaction, 'from', self.defaultAccount)
-
-        # TODO: move to middleware
-        if block_identifier is None:
-            block_identifier = self.defaultBlock
-        return self.web3.manager.request_blocking(
-            "eth_call",
-            [transaction, block_identifier],
-        )
-
-    def estimateGas(self, transaction, block_identifier=None):
-        # TODO: move to middleware
-        if 'from' not in transaction and is_checksum_address(self.defaultAccount):
-            transaction = assoc(transaction, 'from', self.defaultAccount)
+    def estimate_gas_munger(
+        self, transaction: TxParams, block_identifier: Optional[BlockIdentifier] = None
+    ) -> Sequence[Union[TxParams, BlockIdentifier]]:
+        if "from" not in transaction and is_checksum_address(self.default_account):
+            transaction = assoc(transaction, "from", self.default_account)
 
         if block_identifier is None:
-            params = [transaction]
+            params: Sequence[Union[TxParams, BlockIdentifier]] = [transaction]
         else:
             params = [transaction, block_identifier]
 
-        return self.web3.manager.request_blocking(
-            "eth_estimateGas",
-            params,
-        )
+        return params
 
-    def filter(self, filter_params=None, filter_id=None):
-        if filter_id and filter_params:
-            raise TypeError(
-                "Ambiguous invocation: provide either a `filter_params` or a `filter_id` argument. "
-                "Both were supplied."
-            )
-        if is_string(filter_params):
-            if filter_params == "latest":
-                filter_id = self.web3.manager.request_blocking(
-                    "eth_newBlockFilter", [],
-                )
-                return BlockFilter(self.web3, filter_id)
-            elif filter_params == "pending":
-                filter_id = self.web3.manager.request_blocking(
-                    "eth_newPendingTransactionFilter", [],
-                )
-                return TransactionFilter(self.web3, filter_id)
-            else:
-                raise ValueError(
-                    "The filter API only accepts the values of `pending` or "
-                    "`latest` for string based filters"
-                )
-        elif isinstance(filter_params, dict):
-            _filter_id = self.web3.manager.request_blocking(
-                "eth_newFilter",
-                [filter_params],
-            )
-            return LogFilter(self.web3, _filter_id)
-        elif filter_id and not filter_params:
-            return LogFilter(self.web3, filter_id)
+    _estimate_gas: Method[Callable[..., int]] = Method(
+        RPC.eth_estimateGas, mungers=[estimate_gas_munger]
+    )
+
+    _fee_history: Method[Callable[..., FeeHistory]] = Method(
+        RPC.eth_feeHistory, mungers=[default_root_munger]
+    )
+
+    _max_priority_fee: Method[Callable[..., Wei]] = Method(
+        RPC.eth_maxPriorityFeePerGas,
+        is_property=True,
+    )
+
+    def get_block_munger(
+        self, block_identifier: BlockIdentifier, full_transactions: bool = False
+    ) -> Tuple[BlockIdentifier, bool]:
+        return (block_identifier, full_transactions)
+
+    """
+    `eth_getBlockByHash`
+    `eth_getBlockByNumber`
+    """
+    _get_block: Method[Callable[..., BlockData]] = Method(
+        method_choice_depends_on_args=select_method_for_block_identifier(
+            if_predefined=RPC.eth_getBlockByNumber,
+            if_hash=RPC.eth_getBlockByHash,
+            if_number=RPC.eth_getBlockByNumber,
+        ),
+        mungers=[get_block_munger],
+    )
+
+    get_block_number: Method[Callable[[], BlockNumber]] = Method(
+        RPC.eth_blockNumber,
+        is_property=True,
+    )
+
+    get_coinbase: Method[Callable[[], ChecksumAddress]] = Method(
+        RPC.eth_coinbase,
+        is_property=True,
+    )
+
+    def block_id_munger(
+        self,
+        account: Union[Address, ChecksumAddress, ENS],
+        block_identifier: Optional[BlockIdentifier] = None,
+    ) -> Tuple[Union[Address, ChecksumAddress, ENS], BlockIdentifier]:
+        if block_identifier is None:
+            block_identifier = self.default_block
+        return (account, block_identifier)
+
+    def get_storage_at_munger(
+        self,
+        account: Union[Address, ChecksumAddress, ENS],
+        position: int,
+        block_identifier: Optional[BlockIdentifier] = None,
+    ) -> Tuple[Union[Address, ChecksumAddress, ENS], int, BlockIdentifier]:
+        if block_identifier is None:
+            block_identifier = self.default_block
+        return (account, position, block_identifier)
+
+    def call_munger(
+        self,
+        transaction: TxParams,
+        block_identifier: Optional[BlockIdentifier] = None,
+        state_override: Optional[CallOverride] = None,
+    ) -> Union[
+        Tuple[TxParams, BlockIdentifier], Tuple[TxParams, BlockIdentifier, CallOverride]
+    ]:
+        # TODO: move to middleware
+        if "from" not in transaction and is_checksum_address(self.default_account):
+            transaction = assoc(transaction, "from", self.default_account)
+
+        # TODO: move to middleware
+        if block_identifier is None:
+            block_identifier = self.default_block
+
+        if state_override is None:
+            return (transaction, block_identifier)
         else:
-            raise TypeError("Must provide either filter_params as a string or "
-                            "a valid filter object, or a filter_id as a string "
-                            "or hex.")
+            return (transaction, block_identifier, state_override)
 
-    def getFilterChanges(self, filter_id):
-        return self.web3.manager.request_blocking(
-            "eth_getFilterChanges", [filter_id],
+    _get_accounts: Method[Callable[[], Tuple[ChecksumAddress]]] = Method(
+        RPC.eth_accounts,
+        is_property=True,
+    )
+
+    _get_hashrate: Method[Callable[[], int]] = Method(
+        RPC.eth_hashrate,
+        is_property=True,
+    )
+
+    _chain_id: Method[Callable[[], int]] = Method(
+        RPC.eth_chainId,
+        is_property=True,
+    )
+
+    _is_mining: Method[Callable[[], bool]] = Method(
+        RPC.eth_mining,
+        is_property=True,
+    )
+
+    _is_syncing: Method[Callable[[], Union[SyncStatus, bool]]] = Method(
+        RPC.eth_syncing,
+        is_property=True,
+    )
+
+    _get_transaction_receipt: Method[Callable[[_Hash32], TxReceipt]] = Method(
+        RPC.eth_getTransactionReceipt, mungers=[default_root_munger]
+    )
+
+    @overload
+    def contract(
+        self, address: None = None, **kwargs: Any
+    ) -> Union[Type[Contract], Type[AsyncContract]]:
+        ...  # noqa: E704,E501
+
+    @overload  # noqa: F811
+    def contract(
+        self, address: Union[Address, ChecksumAddress, ENS], **kwargs: Any
+    ) -> Union[Contract, AsyncContract]:
+        ...  # noqa: E704,E501
+
+    def contract(  # noqa: F811
+        self,
+        address: Optional[Union[Address, ChecksumAddress, ENS]] = None,
+        **kwargs: Any,
+    ) -> Union[Type[Contract], Contract, Type[AsyncContract], AsyncContract]:
+        ContractFactoryClass = kwargs.pop(
+            "ContractFactoryClass", self.defaultContractFactory
         )
 
-    def getFilterLogs(self, filter_id):
-        return self.web3.manager.request_blocking(
-            "eth_getFilterLogs", [filter_id],
-        )
-
-    def getLogs(self, filter_params):
-        return self.web3.manager.request_blocking(
-            "eth_getLogs", [filter_params],
-        )
-
-    def uninstallFilter(self, filter_id):
-        return self.web3.manager.request_blocking(
-            "eth_uninstallFilter", [filter_id],
-        )
-
-    def contract(self,
-                 address=None,
-                 **kwargs):
-        ContractFactoryClass = kwargs.pop('ContractFactoryClass', self.defaultContractFactory)
-
-        ContractFactory = ContractFactoryClass.factory(self.web3, **kwargs)
+        ContractFactory = ContractFactoryClass.factory(self.w3, **kwargs)
 
         if address:
             return ContractFactory(address)
         else:
             return ContractFactory
 
-    def setContractFactory(self, contractFactory):
+    def set_contract_factory(
+        self,
+        contractFactory: Type[
+            Union[Contract, AsyncContract, ContractCaller, AsyncContractCaller]
+        ],
+    ) -> None:
         self.defaultContractFactory = contractFactory
 
-    def getCompilers(self):
-        return self.web3.manager.request_blocking("eth_getCompilers", [])
 
-    def getWork(self):
-        return self.web3.manager.request_blocking("eth_getWork", [])
+class AsyncEth(BaseEth):
+    is_async = True
+    defaultContractFactory: Type[
+        Union[AsyncContract, AsyncContractCaller]
+    ] = AsyncContract
 
-    def generateGasPrice(self, transaction_params=None):
-        if self.gasPriceStrategy:
-            return self.gasPriceStrategy(self.web3, transaction_params)
+    @property
+    async def accounts(self) -> Tuple[ChecksumAddress]:
+        return await self._get_accounts()  # type: ignore
 
-    def setGasPriceStrategy(self, gas_price_strategy):
-        self.gasPriceStrategy = gas_price_strategy
+    @property
+    async def block_number(self) -> BlockNumber:
+        # types ignored b/c mypy conflict with BlockingEth properties
+        return await self.get_block_number()  # type: ignore
+
+    @property
+    async def chain_id(self) -> int:
+        return await self._chain_id()  # type: ignore
+
+    @property
+    async def coinbase(self) -> ChecksumAddress:
+        # types ignored b/c mypy conflict with BlockingEth properties
+        return await self.get_coinbase()  # type: ignore
+
+    @property
+    async def gas_price(self) -> Wei:
+        # types ignored b/c mypy conflict with BlockingEth properties
+        return await self._gas_price()  # type: ignore
+
+    @property
+    async def hashrate(self) -> int:
+        return await self._get_hashrate()  # type: ignore
+
+    @property
+    async def max_priority_fee(self) -> Wei:
+        """
+        Try to use eth_maxPriorityFeePerGas but, since this is not part
+        of the spec and is only supported by some clients, fall back to
+        an eth_feeHistory calculation with min and max caps.
+        """
+        try:
+            return await self._max_priority_fee()  # type: ignore
+        except ValueError:
+            warnings.warn(
+                "There was an issue with the method eth_maxPriorityFeePerGas. "
+                "Calculating using eth_feeHistory."
+            )
+            return await async_fee_history_priority_fee(self)
+
+    @property
+    async def mining(self) -> bool:
+        return await self._is_mining()  # type: ignore
+
+    @property
+    async def syncing(self) -> Union[SyncStatus, bool]:
+        return await self._is_syncing()  # type: ignore
+
+    async def fee_history(
+        self,
+        block_count: int,
+        newest_block: Union[BlockParams, BlockNumber],
+        reward_percentiles: Optional[List[float]] = None,
+    ) -> FeeHistory:
+        return await self._fee_history(  # type: ignore
+            block_count, newest_block, reward_percentiles
+        )
+
+    _call: Method[Callable[..., Awaitable[Union[bytes, bytearray]]]] = Method(
+        RPC.eth_call, mungers=[BaseEth.call_munger]
+    )
+
+    async def call(
+        self,
+        transaction: TxParams,
+        block_identifier: Optional[BlockIdentifier] = None,
+        state_override: Optional[CallOverride] = None,
+        ccip_read_enabled: Optional[bool] = None,
+    ) -> Union[bytes, bytearray]:
+        ccip_read_enabled_on_provider = self.w3.provider.global_ccip_read_enabled
+        if (
+            # default conditions:
+            ccip_read_enabled_on_provider
+            and ccip_read_enabled is not False
+            # explicit call flag overrides provider flag,
+            # enabling ccip read for specific calls:
+            or not ccip_read_enabled_on_provider
+            and ccip_read_enabled is True
+        ):
+            return await self._durin_call(transaction, block_identifier, state_override)
+
+        return await self._call(transaction, block_identifier, state_override)
+
+    async def _durin_call(
+        self,
+        transaction: TxParams,
+        block_identifier: Optional[BlockIdentifier] = None,
+        state_override: Optional[CallOverride] = None,
+    ) -> Union[bytes, bytearray]:
+        max_redirects = self.w3.provider.ccip_read_max_redirects
+
+        if not max_redirects or max_redirects < 4:
+            raise ValueError(
+                "ccip_read_max_redirects property on provider must be at least 4."
+            )
+
+        for _ in range(max_redirects):
+            try:
+                return await self._call(transaction, block_identifier, state_override)
+            except OffchainLookup as offchain_lookup:
+                durin_calldata = await async_handle_offchain_lookup(
+                    offchain_lookup.payload,
+                    transaction,
+                )
+                transaction["data"] = durin_calldata
+
+        raise TooManyRequests("Too many CCIP read redirects")
+
+    async def send_transaction(self, transaction: TxParams) -> HexBytes:
+        # types ignored b/c mypy conflict with BlockingEth properties
+        return await self._send_transaction(transaction)  # type: ignore
+
+    async def send_raw_transaction(self, transaction: Union[HexStr, bytes]) -> HexBytes:
+        # types ignored b/c mypy conflict with BlockingEth properties
+        return await self._send_raw_transaction(transaction)  # type: ignore
+
+    async def get_transaction(self, transaction_hash: _Hash32) -> TxData:
+        # types ignored b/c mypy conflict with BlockingEth properties
+        return await self._get_transaction(transaction_hash)  # type: ignore
+
+    async def get_raw_transaction(self, transaction_hash: _Hash32) -> TxData:
+        # types ignored b/c mypy conflict with BlockingEth properties
+        return await self._get_raw_transaction(transaction_hash)  # type: ignore
+
+    async def get_raw_transaction_by_block(
+        self, block_identifier: BlockIdentifier, index: int
+    ) -> HexBytes:
+        # types ignored b/c mypy conflict with BlockingEth properties
+        return await self._get_raw_transaction_by_block(  # type: ignore
+            block_identifier, index
+        )
+
+    async def generate_gas_price(
+        self, transaction_params: Optional[TxParams] = None
+    ) -> Optional[Wei]:
+        return self._generate_gas_price(transaction_params)
+
+    async def estimate_gas(
+        self, transaction: TxParams, block_identifier: Optional[BlockIdentifier] = None
+    ) -> int:
+        # types ignored b/c mypy conflict with BlockingEth properties
+        return await self._estimate_gas(transaction, block_identifier)  # type: ignore
+
+    async def get_block(
+        self, block_identifier: BlockIdentifier, full_transactions: bool = False
+    ) -> BlockData:
+        # types ignored b/c mypy conflict with BlockingEth properties
+        return await self._get_block(  # type: ignore
+            block_identifier, full_transactions
+        )
+
+    _get_balance: Method[Callable[..., Awaitable[Wei]]] = Method(
+        RPC.eth_getBalance,
+        mungers=[BaseEth.block_id_munger],
+    )
+
+    async def get_balance(
+        self,
+        account: Union[Address, ChecksumAddress, ENS],
+        block_identifier: Optional[BlockIdentifier] = None,
+    ) -> Wei:
+        return await self._get_balance(account, block_identifier)
+
+    _get_code: Method[Callable[..., Awaitable[HexBytes]]] = Method(
+        RPC.eth_getCode, mungers=[BaseEth.block_id_munger]
+    )
+
+    async def get_code(
+        self,
+        account: Union[Address, ChecksumAddress, ENS],
+        block_identifier: Optional[BlockIdentifier] = None,
+    ) -> HexBytes:
+        return await self._get_code(account, block_identifier)
+
+    _get_logs: Method[Callable[[FilterParams], Awaitable[List[LogReceipt]]]] = Method(
+        RPC.eth_getLogs, mungers=[default_root_munger]
+    )
+
+    async def get_logs(
+        self,
+        filter_params: FilterParams,
+    ) -> List[LogReceipt]:
+        return await self._get_logs(filter_params)
+
+    _get_transaction_count: Method[Callable[..., Awaitable[Nonce]]] = Method(
+        RPC.eth_getTransactionCount,
+        mungers=[BaseEth.block_id_munger],
+    )
+
+    async def get_transaction_count(
+        self,
+        account: Union[Address, ChecksumAddress, ENS],
+        block_identifier: Optional[BlockIdentifier] = None,
+    ) -> Nonce:
+        return await self._get_transaction_count(account, block_identifier)
+
+    async def get_transaction_receipt(self, transaction_hash: _Hash32) -> TxReceipt:
+        return await self._get_transaction_receipt(transaction_hash)  # type: ignore
+
+    async def wait_for_transaction_receipt(
+        self, transaction_hash: _Hash32, timeout: float = 120, poll_latency: float = 0.1
+    ) -> TxReceipt:
+        async def _wait_for_tx_receipt_with_timeout(
+            _tx_hash: _Hash32, _poll_latence: float
+        ) -> TxReceipt:
+            while True:
+                try:
+                    tx_receipt = await self._get_transaction_receipt(  # type: ignore
+                        _tx_hash
+                    )
+                except TransactionNotFound:
+                    tx_receipt = None
+                if tx_receipt is not None:
+                    break
+                await asyncio.sleep(poll_latency)
+            return tx_receipt
+
+        try:
+            return await asyncio.wait_for(
+                _wait_for_tx_receipt_with_timeout(transaction_hash, poll_latency),
+                timeout=timeout,
+            )
+        except asyncio.TimeoutError:
+            raise TimeExhausted(
+                f"Transaction {HexBytes(transaction_hash) !r} is not in the chain "
+                f"after {timeout} seconds"
+            )
+
+    _get_storage_at: Method[Callable[..., Awaitable[HexBytes]]] = Method(
+        RPC.eth_getStorageAt,
+        mungers=[BaseEth.get_storage_at_munger],
+    )
+
+    async def get_storage_at(
+        self,
+        account: Union[Address, ChecksumAddress, ENS],
+        position: int,
+        block_identifier: Optional[BlockIdentifier] = None,
+    ) -> HexBytes:
+        return await self._get_storage_at(account, position, block_identifier)
+
+
+class Eth(BaseEth):
+    defaultContractFactory: Type[Union[Contract, ContractCaller]] = Contract
+
+    def namereg(self) -> NoReturn:
+        raise NotImplementedError()
+
+    def icapNamereg(self) -> NoReturn:
+        raise NotImplementedError()
+
+    @property
+    def syncing(self) -> Union[SyncStatus, bool]:
+        return self._is_syncing()
+
+    @property
+    def coinbase(self) -> ChecksumAddress:
+        return self.get_coinbase()
+
+    @property
+    def mining(self) -> bool:
+        return self._is_mining()
+
+    @property
+    def hashrate(self) -> int:
+        return self._get_hashrate()
+
+    @property
+    def gas_price(self) -> Wei:
+        return self._gas_price()
+
+    @property
+    def accounts(self) -> Tuple[ChecksumAddress]:
+        return self._get_accounts()
+
+    @property
+    def block_number(self) -> BlockNumber:
+        return self.get_block_number()
+
+    @property
+    def chain_id(self) -> int:
+        return self._chain_id()
+
+    get_balance: Method[Callable[..., Wei]] = Method(
+        RPC.eth_getBalance,
+        mungers=[BaseEth.block_id_munger],
+    )
+
+    @property
+    def max_priority_fee(self) -> Wei:
+        """
+        Try to use eth_maxPriorityFeePerGas but, since this is not part
+        of the spec and is only supported by some clients, fall back to
+        an eth_feeHistory calculation with min and max caps.
+        """
+        try:
+            return self._max_priority_fee()
+        except ValueError:
+            warnings.warn(
+                "There was an issue with the method eth_maxPriorityFeePerGas. "
+                "Calculating using eth_feeHistory."
+            )
+            return fee_history_priority_fee(self)
+
+    get_storage_at: Method[Callable[..., HexBytes]] = Method(
+        RPC.eth_getStorageAt,
+        mungers=[BaseEth.get_storage_at_munger],
+    )
+
+    def get_proof_munger(
+        self,
+        account: Union[Address, ChecksumAddress, ENS],
+        positions: Sequence[int],
+        block_identifier: Optional[BlockIdentifier] = None,
+    ) -> Tuple[
+        Union[Address, ChecksumAddress, ENS], Sequence[int], Optional[BlockIdentifier]
+    ]:
+        if block_identifier is None:
+            block_identifier = self.default_block
+        return (account, positions, block_identifier)
+
+    get_proof: Method[
+        Callable[
+            [
+                Tuple[
+                    Union[Address, ChecksumAddress, ENS],
+                    Sequence[int],
+                    Optional[BlockIdentifier],
+                ]
+            ],
+            MerkleProof,
+        ]
+    ] = Method(
+        RPC.eth_getProof,
+        mungers=[get_proof_munger],
+    )
+
+    def get_block(
+        self, block_identifier: BlockIdentifier, full_transactions: bool = False
+    ) -> BlockData:
+        return self._get_block(block_identifier, full_transactions)
+
+    get_code: Method[Callable[..., HexBytes]] = Method(
+        RPC.eth_getCode, mungers=[BaseEth.block_id_munger]
+    )
+
+    """
+    `eth_getBlockTransactionCountByHash`
+    `eth_getBlockTransactionCountByNumber`
+    """
+    get_block_transaction_count: Method[Callable[[BlockIdentifier], int]] = Method(
+        method_choice_depends_on_args=select_method_for_block_identifier(
+            if_predefined=RPC.eth_getBlockTransactionCountByNumber,
+            if_hash=RPC.eth_getBlockTransactionCountByHash,
+            if_number=RPC.eth_getBlockTransactionCountByNumber,
+        ),
+        mungers=[default_root_munger],
+    )
+
+    """
+    `eth_getUncleCountByBlockHash`
+    `eth_getUncleCountByBlockNumber`
+    """
+    get_uncle_count: Method[Callable[[BlockIdentifier], int]] = Method(
+        method_choice_depends_on_args=select_method_for_block_identifier(
+            if_predefined=RPC.eth_getUncleCountByBlockNumber,
+            if_hash=RPC.eth_getUncleCountByBlockHash,
+            if_number=RPC.eth_getUncleCountByBlockNumber,
+        ),
+        mungers=[default_root_munger],
+    )
+
+    """
+    `eth_getUncleByBlockHashAndIndex`
+    `eth_getUncleByBlockNumberAndIndex`
+    """
+    get_uncle_by_block: Method[Callable[[BlockIdentifier, int], Uncle]] = Method(
+        method_choice_depends_on_args=select_method_for_block_identifier(
+            if_predefined=RPC.eth_getUncleByBlockNumberAndIndex,
+            if_hash=RPC.eth_getUncleByBlockHashAndIndex,
+            if_number=RPC.eth_getUncleByBlockNumberAndIndex,
+        ),
+        mungers=[default_root_munger],
+    )
+
+    def get_transaction(self, transaction_hash: _Hash32) -> TxData:
+        return self._get_transaction(transaction_hash)
+
+    def get_raw_transaction(self, transaction_hash: _Hash32) -> _Hash32:
+        return self._get_raw_transaction(transaction_hash)
+
+    def get_raw_transaction_by_block(
+        self, block_identifier: BlockIdentifier, index: int
+    ) -> HexBytes:
+        return self._get_raw_transaction_by_block(block_identifier, index)
+
+    get_transaction_by_block: Method[Callable[[BlockIdentifier, int], TxData]] = Method(
+        method_choice_depends_on_args=select_method_for_block_identifier(
+            if_predefined=RPC.eth_getTransactionByBlockNumberAndIndex,
+            if_hash=RPC.eth_getTransactionByBlockHashAndIndex,
+            if_number=RPC.eth_getTransactionByBlockNumberAndIndex,
+        ),
+        mungers=[default_root_munger],
+    )
+
+    def wait_for_transaction_receipt(
+        self, transaction_hash: _Hash32, timeout: float = 120, poll_latency: float = 0.1
+    ) -> TxReceipt:
+        try:
+            with Timeout(timeout) as _timeout:
+                while True:
+                    try:
+                        tx_receipt = self._get_transaction_receipt(transaction_hash)
+                    except TransactionNotFound:
+                        tx_receipt = None
+                    if tx_receipt is not None:
+                        break
+                    _timeout.sleep(poll_latency)
+            return tx_receipt
+
+        except Timeout:
+            raise TimeExhausted(
+                f"Transaction {HexBytes(transaction_hash) !r} is not in the chain "
+                f"after {timeout} seconds"
+            )
+
+    def get_transaction_receipt(self, transaction_hash: _Hash32) -> TxReceipt:
+        return self._get_transaction_receipt(transaction_hash)
+
+    get_transaction_count: Method[Callable[..., Nonce]] = Method(
+        RPC.eth_getTransactionCount,
+        mungers=[BaseEth.block_id_munger],
+    )
+
+    def replace_transaction(
+        self, transaction_hash: _Hash32, new_transaction: TxParams
+    ) -> HexBytes:
+        current_transaction = get_required_transaction(self.w3, transaction_hash)
+        return replace_transaction(self.w3, current_transaction, new_transaction)
+
+    # todo: Update Any to stricter kwarg checking with TxParams
+    # https://github.com/python/mypy/issues/4441
+    def modify_transaction(
+        self, transaction_hash: _Hash32, **transaction_params: Any
+    ) -> HexBytes:
+        assert_valid_transaction_params(cast(TxParams, transaction_params))
+        current_transaction = get_required_transaction(self.w3, transaction_hash)
+        current_transaction_params = extract_valid_transaction_params(
+            current_transaction
+        )
+        new_transaction = merge(current_transaction_params, transaction_params)
+        return replace_transaction(self.w3, current_transaction, new_transaction)
+
+    def send_transaction(self, transaction: TxParams) -> HexBytes:
+        return self._send_transaction(transaction)
+
+    def send_raw_transaction(self, transaction: Union[HexStr, bytes]) -> HexBytes:
+        return self._send_raw_transaction(transaction)
+
+    def sign_munger(
+        self,
+        account: Union[Address, ChecksumAddress, ENS],
+        data: Union[int, bytes] = None,
+        hexstr: HexStr = None,
+        text: str = None,
+    ) -> Tuple[Union[Address, ChecksumAddress, ENS], HexStr]:
+        message_hex = to_hex(data, hexstr=hexstr, text=text)
+        return (account, message_hex)
+
+    sign: Method[Callable[..., HexStr]] = Method(
+        RPC.eth_sign,
+        mungers=[sign_munger],
+    )
+
+    sign_transaction: Method[Callable[[TxParams], SignedTx]] = Method(
+        RPC.eth_signTransaction,
+        mungers=[default_root_munger],
+    )
+
+    sign_typed_data: Method[Callable[..., HexStr]] = Method(
+        RPC.eth_signTypedData,
+        mungers=[default_root_munger],
+    )
+
+    _call: Method[Callable[..., Union[bytes, bytearray]]] = Method(
+        RPC.eth_call, mungers=[BaseEth.call_munger]
+    )
+
+    def call(
+        self,
+        transaction: TxParams,
+        block_identifier: Optional[BlockIdentifier] = None,
+        state_override: Optional[CallOverride] = None,
+        ccip_read_enabled: Optional[bool] = None,
+    ) -> Union[bytes, bytearray]:
+        ccip_read_enabled_on_provider = self.w3.provider.global_ccip_read_enabled
+        if (
+            # default conditions:
+            ccip_read_enabled_on_provider
+            and ccip_read_enabled is not False
+            # explicit call flag overrides provider flag,
+            # enabling ccip read for specific calls:
+            or not ccip_read_enabled_on_provider
+            and ccip_read_enabled is True
+        ):
+            return self._durin_call(transaction, block_identifier, state_override)
+
+        return self._call(transaction, block_identifier, state_override)
+
+    def _durin_call(
+        self,
+        transaction: TxParams,
+        block_identifier: Optional[BlockIdentifier] = None,
+        state_override: Optional[CallOverride] = None,
+    ) -> Union[bytes, bytearray]:
+        max_redirects = self.w3.provider.ccip_read_max_redirects
+
+        if not max_redirects or max_redirects < 4:
+            raise ValueError(
+                "ccip_read_max_redirects property on provider must be at least 4."
+            )
+
+        for _ in range(max_redirects):
+            try:
+                return self._call(transaction, block_identifier, state_override)
+            except OffchainLookup as offchain_lookup:
+                durin_calldata = handle_offchain_lookup(
+                    offchain_lookup.payload, transaction
+                )
+                transaction["data"] = durin_calldata
+
+        raise TooManyRequests("Too many CCIP read redirects")
+
+    def estimate_gas(
+        self, transaction: TxParams, block_identifier: Optional[BlockIdentifier] = None
+    ) -> int:
+        return self._estimate_gas(transaction, block_identifier)
+
+    def fee_history(
+        self,
+        block_count: int,
+        newest_block: Union[BlockParams, BlockNumber],
+        reward_percentiles: Optional[List[float]] = None,
+    ) -> FeeHistory:
+        return self._fee_history(block_count, newest_block, reward_percentiles)
+
+    def filter_munger(
+        self,
+        filter_params: Optional[Union[str, FilterParams]] = None,
+        filter_id: Optional[HexStr] = None,
+    ) -> Union[List[FilterParams], List[HexStr], List[str]]:
+        if filter_id and filter_params:
+            raise TypeError(
+                "Ambiguous invocation: provide either a `filter_params` or a "
+                "`filter_id` argument. Both were supplied."
+            )
+        if isinstance(filter_params, dict):
+            return [filter_params]
+        elif is_string(filter_params):
+            if filter_params in ["latest", "pending"]:
+                return [filter_params]
+            else:
+                raise ValueError(
+                    "The filter API only accepts the values of `pending` or "
+                    "`latest` for string based filters"
+                )
+        elif filter_id and not filter_params:
+            return [filter_id]
+        else:
+            raise TypeError(
+                "Must provide either filter_params as a string or "
+                "a valid filter object, or a filter_id as a string "
+                "or hex."
+            )
+
+    filter: Method[Callable[..., Any]] = Method(
+        method_choice_depends_on_args=select_filter_method(
+            if_new_block_filter=RPC.eth_newBlockFilter,
+            if_new_pending_transaction_filter=RPC.eth_newPendingTransactionFilter,
+            if_new_filter=RPC.eth_newFilter,
+        ),
+        mungers=[filter_munger],
+    )
+
+    get_filter_changes: Method[Callable[[HexStr], List[LogReceipt]]] = Method(
+        RPC.eth_getFilterChanges, mungers=[default_root_munger]
+    )
+
+    get_filter_logs: Method[Callable[[HexStr], List[LogReceipt]]] = Method(
+        RPC.eth_getFilterLogs, mungers=[default_root_munger]
+    )
+
+    get_logs: Method[Callable[[FilterParams], List[LogReceipt]]] = Method(
+        RPC.eth_getLogs, mungers=[default_root_munger]
+    )
+
+    submit_hashrate: Method[Callable[[int, _Hash32], bool]] = Method(
+        RPC.eth_submitHashrate,
+        mungers=[default_root_munger],
+    )
+
+    submit_work: Method[Callable[[int, _Hash32, _Hash32], bool]] = Method(
+        RPC.eth_submitWork,
+        mungers=[default_root_munger],
+    )
+
+    uninstall_filter: Method[Callable[[HexStr], bool]] = Method(
+        RPC.eth_uninstallFilter,
+        mungers=[default_root_munger],
+    )
+
+    get_work: Method[Callable[[], List[HexBytes]]] = Method(
+        RPC.eth_getWork,
+        is_property=True,
+    )
+
+    def generate_gas_price(
+        self, transaction_params: Optional[TxParams] = None
+    ) -> Optional[Wei]:
+        return self._generate_gas_price(transaction_params)

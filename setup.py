@@ -1,100 +1,113 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from setuptools import (
     find_packages,
     setup,
 )
 
 extras_require = {
-    'tester': [
-        "eth-tester[py-evm]==0.1.0-beta.37",
-        "py-geth>=2.0.1,<3.0.0",
-        "pytest-ethereum>=0.1.3a6,<1.0.0",
+    "tester": [
+        "eth-tester[py-evm]==v0.7.0-beta.1",
+        "py-geth>=3.9.1,<4",
     ],
-    'testrpc': ["eth-testrpc>=1.3.3,<2.0.0"],
-    'linter': [
-        "flake8==3.4.1",
+    "linter": [
+        "black>=22.1.0,<23.0",
+        "flake8==3.8.3",
         "isort>=4.2.15,<4.3.5",
+        "mypy==0.910",
+        "types-setuptools>=57.4.4,<58",
+        "types-requests>=2.26.1,<3",
+        "types-protobuf==3.19.13",
     ],
-    'docs': [
+    "docs": [
         "mock",
         "sphinx-better-theme>=0.1.4",
         "click>=5.1",
         "configparser==3.5.0",
         "contextlib2>=0.5.4",
-        "ethtoken",
-        "py-geth>=1.4.0",
+        "py-geth>=3.9.1,<4",
         "py-solc>=0.4.0",
-        "pytest>=3.5.0,<4.0.0",
-        "sphinx",
+        "pytest>=6.2.5,<7",
+        "sphinx>=4.2.0,<5",
         "sphinx_rtd_theme>=0.1.9",
         "toposort>=1.4",
+        "towncrier==18.5.0",
         "urllib3",
-        "newchain-web3>=0.1.0",
-        "wheel"
+        "wheel",
     ],
-    'dev': [
+    "dev": [
         "bumpversion",
-        "flaky>=3.3.0",
-        "hypothesis>=3.31.2",
-        "pytest>=3.6.0,<4.0.0",
-        "pytest-mock==1.*",
+        "flaky>=3.7.0,<4",
+        "hypothesis>=3.31.2,<6",
+        "pytest>=6.2.5,<7",
+        "pytest-asyncio>=0.18.1,<0.19",
+        "pytest-mock>=1.10,<2",
         "pytest-pythonpath>=0.3",
-        "pytest-watch==4.*",
-        "pytest-xdist==1.*",
-        "setuptools>=36.2.0",
+        "pytest-watch>=4.2,<5",
+        "pytest-xdist>=1.29,<2",
+        "setuptools>=38.6.0",
         "tox>=1.8.0",
-        "tqdm",
-        "twine",
-        "when-changed"
-    ]
+        "tqdm>4.32,<5",
+        "twine>=1.13,<2",
+        "pluggy==0.13.1",
+        "when-changed>=0.3.0,<0.4",
+    ],
 }
 
-extras_require['dev'] = (
-    extras_require['tester'] +
-    extras_require['linter'] +
-    extras_require['docs'] +
-    extras_require['dev']
+extras_require["dev"] = (
+    extras_require["tester"]
+    + extras_require["linter"]
+    + extras_require["docs"]
+    + extras_require["dev"]
 )
 
+with open("./README.md") as readme:
+    long_description = readme.read()
+
 setup(
-    name='newchain-web3',
-    # *IMPORTANT*: Don't manually change the version here. Use the 'bumpversion' utility.
-    version='0.1.0',
+    name="newchain-web3",
+    version="0.2.0",
     description="""NewChain-Web3.py""",
-    long_description_markdown_filename='README.md',
-    author='Xia Wu',
-    author_email='xiawu@zeuux.org',
-    url='https://github.com/xiawu/newchain-web3.py',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    author="Xia Wu",
+    author_email="xiawu@zeuux.org",
+    url="https://github.com/newtonproject/newchain-lib-web3-py",
     include_package_data=True,
     install_requires=[
-        "eth-abi>=2.0.0b6,<3.0.0",
-        "newchain-account>=0.1.0",
+        "aiohttp>=3.7.4.post0,<4",
+        "eth-abi>=3.0.0,<4.0.0",
+        "newchain-account>=0.3.0",
         "eth-hash[pycryptodome]>=0.2.0,<1.0.0",
-        "eth-typing>=2.0.0,<3.0.0",
-        "eth-utils>=1.3.0,<2.0.0",
-        "ethpm==0.1.3",
+        "eth-typing>=3.0.0,<4.0.0",
+        "eth-utils>=2.0.0,<3.0.0",
         "hexbytes>=0.1.0,<1.0.0",
+        "ipfshttpclient==0.8.0a2",
+        "jsonschema>=4.0.0,<5",
         "lru-dict>=1.1.6,<2.0.0",
+        "protobuf>=3.10.0,<4",
+        "pywin32>=223;platform_system=='Windows'",
         "requests>=2.16.0,<3.0.0",
-        "websockets>=7.0.0,<8.0.0",
-        "pypiwin32>=223;platform_system=='Windows'",
+        # remove typing_extensions after python_requires>=3.8, see web3._utils.compat
+        "typing-extensions>=3.7.4.1,<5;python_version<'3.8'",
+        "websockets>=10.0.0,<11",
     ],
-    setup_requires=['setuptools-markdown'],
-    python_requires='>=3.6,<4',
+    python_requires=">=3.7.2",
     extras_require=extras_require,
-    py_modules=['newchain_web3', 'ens'],
+    py_modules=["newchain_web3", "ens", "ethpm"],
     license="MIT",
     zip_safe=False,
-    keywords='newchain',
+    keywords="newchain",
     packages=find_packages(exclude=["tests", "tests.*"]),
+    package_data={"newchain_web3": ["py.typed"]},
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
 )

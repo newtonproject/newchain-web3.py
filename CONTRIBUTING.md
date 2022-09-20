@@ -32,3 +32,11 @@ order to check that your modifications don't break anything.
 
 Once you've made a pull request take a look at the travis build status in the
 GitHub interface and make sure the tests are runnning as you'd expect.
+
+# Contributing
+
+Thanks for the interest! See the [contributor documentation][contribute]
+to get started, and reach out on [Discord][discord] if you get stuck.
+
+[contribute]: https://web3py.readthedocs.io/en/latest/contributing.html
+[discord]: https://discord.gg/GHryRvPB84

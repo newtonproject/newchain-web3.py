@@ -1,16 +1,23 @@
+from typing import (
+    Optional,
+    Sequence,
+)
+
 from newchain_web3.exceptions import (
     InsufficientData,
 )
 
 
-def percentile(values=None, percentile=None):
-    """Calculates a simplified weighted average percentile
-    """
+def percentile(
+    values: Optional[Sequence[int]] = None, percentile: Optional[float] = None
+) -> float:
+    """Calculates a simplified weighted average percentile"""
     if values in [None, tuple(), []] or len(values) < 1:
         raise InsufficientData(
-            "Expected a sequence of at least 1 integers, got {0!r}".format(values))
+            f"Expected a sequence of at least 1 integers, got {values!r}"
+        )
     if percentile is None:
-        raise ValueError("Expected a percentile choice, got {0}".format(percentile))
+        raise ValueError(f"Expected a percentile choice, got {percentile}")
 
     sorted_values = sorted(values)
 

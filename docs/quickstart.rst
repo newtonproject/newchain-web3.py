@@ -1,3 +1,5 @@
+.. _quickstart:
+
 Quickstart
 ==========
 
@@ -19,49 +21,101 @@ using ``pip`` as follows:
 
 
 .. NOTE:: If you run into problems during installation, you might have a
-    broken environment. See the troubleshooting guide to :ref:`setup_environment`.
-
-
-Installation from source can be done from the root of the project with the
-following command.
-
-.. code-block:: shell
-
-   $ pip install .
+    broken environment. See the troubleshooting guide to :ref:`setting up a
+    clean environment <setup_environment>`.
 
 
 Using Web3
 ----------
 
-To use the web3 library you will need to initialize the
-:class:`~web3.Web3` class.
+This library depends on a connection to an Ethereum node. We call these connections
+*Providers* and there are several ways to configure them. The full details can be found
+in the :ref:`Providers<providers>` documentation. This Quickstart guide will highlight
+a couple of the most common use cases.
 
-Use the ``auto`` module to :ref:`guess at common node connection options
-<automatic_provider_detection>`.
+
+Test Provider
+*************
+
+If you're just learning the ropes or doing some quick prototyping, you can use a test
+provider, `eth-tester <https://github.com/ethereum/eth-tester>`_. This provider includes
+some accounts prepopulated with test ether and automines each transaction into a block.
+Web3.py makes this test provider available via ``EthereumTesterProvider``:
 
 .. code-block:: python
 
-    >>> from newchain_web3.auto import w3
-    >>> w3.eth.blockNumber
-    4000000
+   >>> from newchain_web3 import Web3, EthereumTesterProvider
+   >>> w3 = Web3(EthereumTesterProvider())
+   >>> w3.is_connected()
+   True
 
-This ``w3`` instance will now allow you to interact with the Ethereum
-blockchain.
 
-.. NOTE:: If you get the result ``UnhandledRequest: No providers responded to the RPC request``
-    then you are not connected to a node. See :ref:`why_need_connection` and
-    :ref:`choosing_provider`
+Local Providers
+***************
+
+The hardware requirements are `steep <https://ethereum.org/en/developers/docs/nodes-and-clients/run-a-node/#top>`_,
+but the safest way to interact with Ethereum is to run an Ethereum client on your own hardware. 
+For locally run nodes, an IPC connection is the most secure option, but HTTP and
+websocket configurations are also available. By default, the popular `Geth client <https://geth.ethereum.org/>`_
+exposes port ``8545`` to serve HTTP requests and ``8546`` for websocket requests. Connecting
+to this local node can be done as follows:
+
+.. code-block:: python
+
+   >>> from newchain_web3 import Web3
+
+   # IPCProvider:
+   >>> w3 = Web3(Web3.IPCProvider('./path/to/geth.ipc'))
+
+   # HTTPProvider:
+   >>> w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
+
+   # WebsocketProvider:
+   >>> w3 = Web3(Web3.WebsocketProvider('wss://127.0.0.1:8546'))
+
+   >>> w3.is_connected()
+   True
+
+If you stick to the default ports or IPC file locations, you can utilize a
+:ref:`convenience method <automatic_provider>` to automatically detect the provider
+and save a few keystrokes:
+
+.. code-block:: python
+
+   >>> from newchain_web3.auto import w3
+   >>> w3.is_connected()
+   True
+
+
+Remote Providers
+****************
+
+The quickest way to interact with the Ethereum blockchain is to use a remote node provider,
+like `Infura <https://infura.io/>`_, `Alchemy <https://www.alchemy.com/>`_, or `QuickNode <https://www.quicknode.com/>`_.
+You can connect to a remote node by specifying the endpoint, just like the previous local node example:
+
+.. code-block:: python
+
+   >>> from newchain_web3 import Web3
+
+   >>> w3 = Web3(Web3.HTTPProvider('https://<your-provider-url>'))
+
+   >>> w3 = Web3(Web3.WebsocketProvider('wss://<your-provider-url>'))
+
+This endpoint is provided by the remote node service after you create an account.
 
 .. _first_w3_use:
 
-Getting Blockchain Info
-----------------------------------------
 
-It's time to start using Web3.py! Try getting all the information about the latest block.
+Getting Blockchain Info
+-----------------------
+
+It's time to start using Web3.py! Once properly configured, the ``w3`` instance will allow you
+to interact with the Ethereum blockchain. Try getting all the information about the latest block:
 
 .. code-block:: python
 
-    >>> w3.eth.getBlock('latest')
+    >>> w3.eth.get_block('latest')
     {'difficulty': 1,
      'gasLimit': 6283185,
      'gasUsed': 0,
@@ -83,9 +137,16 @@ It's time to start using Web3.py! Try getting all the information about the late
      'transactionsRoot': HexBytes('0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'),
      'uncles': []}
 
+Web3.py can help you read block data, sign and send transactions, deploy and interact with contracts,
+and a number of other features.
+
 Many of the typical things you'll want to do will be in the :class:`w3.eth <web3.eth.Eth>` API,
 so that is a good place to start.
 
 If you want to dive straight into contracts, check out the section on :ref:`contracts`,
 including a :ref:`contract_example`, and how to create a contract instance using
 :meth:`w3.eth.contract() <web3.eth.Eth.contract>`.
+
+.. NOTE:: It is recommended that your development environment have the ``PYTHONWARNINGS=default``
+    environment variable set. Some deprecation warnings will not show up
+    without this variable being set.

@@ -1,7 +1,6 @@
-FROM python:3.6
+FROM python:3.9
 
 # Set up code directory
-RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # Install Linux dependencies
@@ -10,6 +9,7 @@ RUN apt-get update && apt-get install -y libssl-dev
 COPY newchain_web3 ./newchain_web3/
 COPY tests ./tests/
 COPY ens ./ens/
+COPY ethpm ./ethpm/
 
 COPY setup.py .
 COPY README.md .

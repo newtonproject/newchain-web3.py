@@ -1,8 +1,10 @@
-
 import pytest
 
-from newchain_web3._utils.formatters import (
+from eth_utils.curried import (
     apply_formatters_to_dict,
+)
+
+from newchain_web3._utils.formatters import (
     map_collection,
     recursive_map,
 )
@@ -15,20 +17,20 @@ def square_int(x):
         return x
 
 
-@pytest.mark.parametrize('non_collection', [1, 'abc', u'def', True, None])
+@pytest.mark.parametrize("non_collection", [1, "abc", "def", True, None])
 def test_map_collection_on_non_collection(non_collection):
     assert map_collection(lambda x: x + 2, non_collection) == non_collection
 
 
-@pytest.mark.parametrize('coll', [set, list, tuple])
+@pytest.mark.parametrize("coll", [set, list, tuple])
 def test_collection_apply(coll):
     vals = coll([1, 2])
     assert map_collection(lambda x: x + 2, vals) == coll([3, 4])
 
 
 def test_collection_apply_to_mapping():
-    vals = {'a': 1, 'b': 2}
-    assert map_collection(lambda x: x + 2, vals) == {'a': 3, 'b': 4}
+    vals = {"a": 1, "b": 2}
+    assert map_collection(lambda x: x + 2, vals) == {"a": 3, "b": 4}
 
 
 def test_recursive_collection_apply():
@@ -45,7 +47,7 @@ def test_recursive_collection_cycle():
 def test_format_dict_error():
     with pytest.raises(ValueError) as exc_info:
         apply_formatters_to_dict(
-            {'myfield': int},
-            {'myfield': 'a'},
+            {"myfield": int},
+            {"myfield": "a"},
         )
-    assert 'myfield' in str(exc_info.value)
+    assert "myfield" in str(exc_info.value)

@@ -1,13 +1,33 @@
 import functools
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+    cast,
+)
 
-from eth_abi import (
-    encode_abi as eth_abi_encode_abi,
+from eth_abi.codec import (
+    ABICodec,
+)
+from eth_typing import (
+    ChecksumAddress,
+    HexStr,
 )
 from eth_utils import (
     add_0x_prefix,
     encode_hex,
     function_abi_to_4byte_selector,
+    is_binary_address,
+    is_checksum_address,
+    is_list_like,
     is_text,
+)
+from eth_utils.toolz import (
+    pipe,
 )
 from hexbytes import (
     HexBytes,
@@ -24,6 +44,7 @@ from newchain_web3._utils.abi import (
     get_abi_input_types,
     get_aligned_abi_inputs,
     get_fallback_func_abi,
+    get_receive_func_abi,
     map_abi_data,
     merge_args_and_kwargs,
 )
@@ -32,6 +53,10 @@ from newchain_web3._utils.encoding import (
 )
 from newchain_web3._utils.function_identifiers import (
     FallbackFn,
+    ReceiveFn,
+)
+from newchain_web3._utils.method_formatters import (
+    to_integer_if_hex,
 )
 from newchain_web3._utils.normalizers import (
     abi_address_to_hex,
@@ -39,28 +64,57 @@ from newchain_web3._utils.normalizers import (
     abi_ens_resolver,
     abi_string_to_text,
 )
-from newchain_web3._utils.toolz import (
-    pipe,
-    valmap,
-)
 from newchain_web3.exceptions import (
     ValidationError,
 )
+from newchain_web3.types import (
+    ABI,
+    ABIEvent,
+    ABIFunction,
+    TxParams,
+)
+
+if TYPE_CHECKING:
+    from newchain_web3 import Web3  # noqa: F401
 
 
-def find_matching_event_abi(abi, event_name=None, argument_names=None):
+def extract_argument_types(*args: Sequence[Any]) -> str:
+    """
+    Takes a list of arguments and returns a string representation of the argument types,
+    appropriately collapsing `tuple` types into the respective nested types.
+    """
+    collapsed_args = []
+
+    for arg in args:
+        if is_list_like(arg):
+            collapsed_nested = []
+            for nested in arg:
+                if is_list_like(nested):
+                    collapsed_nested.append(f"({extract_argument_types(nested)})")
+                else:
+                    collapsed_nested.append(_get_argument_readable_type(nested))
+            collapsed_args.append(",".join(collapsed_nested))
+        else:
+            collapsed_args.append(_get_argument_readable_type(arg))
+
+    return ",".join(collapsed_args)
+
+
+def find_matching_event_abi(
+    abi: ABI,
+    event_name: Optional[str] = None,
+    argument_names: Optional[Sequence[str]] = None,
+) -> ABIEvent:
 
     filters = [
-        functools.partial(filter_by_type, 'event'),
+        functools.partial(filter_by_type, "event"),
     ]
 
     if event_name is not None:
         filters.append(functools.partial(filter_by_name, event_name))
 
     if argument_names is not None:
-        filters.append(
-            functools.partial(filter_by_argument_name, argument_names)
-        )
+        filters.append(functools.partial(filter_by_argument_name, argument_names))
 
     event_abi_candidates = pipe(abi, *filters)
 
@@ -72,7 +126,13 @@ def find_matching_event_abi(abi, event_name=None, argument_names=None):
         raise ValueError("Multiple events found")
 
 
-def find_matching_fn_abi(abi, fn_identifier=None, args=None, kwargs=None):
+def find_matching_fn_abi(
+    abi: ABI,
+    abi_codec: ABICodec,
+    fn_identifier: Optional[Union[str, Type[FallbackFn], Type[ReceiveFn]]] = None,
+    args: Optional[Sequence[Any]] = None,
+    kwargs: Optional[Any] = None,
+) -> ABIFunction:
     args = args or tuple()
     kwargs = kwargs or dict()
     num_arguments = len(args) + len(kwargs)
@@ -80,12 +140,15 @@ def find_matching_fn_abi(abi, fn_identifier=None, args=None, kwargs=None):
     if fn_identifier is FallbackFn:
         return get_fallback_func_abi(abi)
 
+    if fn_identifier is ReceiveFn:
+        return get_receive_func_abi(abi)
+
     if not is_text(fn_identifier):
         raise TypeError("Unsupported function identifier")
 
     name_filter = functools.partial(filter_by_name, fn_identifier)
     arg_count_filter = functools.partial(filter_by_argument_count, num_arguments)
-    encoding_filter = functools.partial(filter_by_encodability, args, kwargs)
+    encoding_filter = functools.partial(filter_by_encodability, abi_codec, args, kwargs)
 
     function_candidates = pipe(abi, name_filter, arg_count_filter, encoding_filter)
 
@@ -93,52 +156,59 @@ def find_matching_fn_abi(abi, fn_identifier=None, args=None, kwargs=None):
         return function_candidates[0]
     else:
         matching_identifiers = name_filter(abi)
-        matching_function_signatures = [abi_to_signature(func) for func in matching_identifiers]
+        matching_function_signatures = [
+            abi_to_signature(func) for func in matching_identifiers
+        ]
 
         arg_count_matches = len(arg_count_filter(matching_identifiers))
         encoding_matches = len(encoding_filter(matching_identifiers))
 
         if arg_count_matches == 0:
-            diagnosis = "\nFunction invocation failed due to improper number of arguments."
+            diagnosis = (
+                "\nFunction invocation failed due to improper number of arguments."
+            )
         elif encoding_matches == 0:
-            diagnosis = "\nFunction invocation failed due to no matching argument types."
+            diagnosis = (
+                "\nFunction invocation failed due to no matching argument types."
+            )
         elif encoding_matches > 1:
             diagnosis = (
                 "\nAmbiguous argument encoding. "
-                "Provided arguments can be encoded to multiple functions matching this call."
+                "Provided arguments can be encoded to multiple functions "
+                "matching this call."
             )
 
+        collapsed_args = extract_argument_types(args)
+        collapsed_kwargs = dict(
+            {(k, extract_argument_types([v])) for k, v in kwargs.items()}
+        )
         message = (
-            "\nCould not identify the intended function with name `{name}`, "
-            "positional argument(s) of type `{arg_types}` and "
-            "keyword argument(s) of type `{kwarg_types}`."
-            "\nFound {num_candidates} function(s) with the name `{name}`: {candidates}"
-            "{diagnosis}"
-        ).format(
-            name=fn_identifier,
-            arg_types=tuple(map(type, args)),
-            kwarg_types=valmap(type, kwargs),
-            num_candidates=len(matching_identifiers),
-            candidates=matching_function_signatures,
-            diagnosis=diagnosis,
+            f"\nCould not identify the intended function with name `{fn_identifier}`, "
+            f"positional arguments with type(s) `{collapsed_args}` and "
+            f"keyword arguments with type(s) `{collapsed_kwargs}`."
+            f"\nFound {len(matching_identifiers)} function(s) with "
+            f"the name `{fn_identifier}`: {matching_function_signatures}{diagnosis}"
         )
 
         raise ValidationError(message)
 
 
-def encode_abi(web3, abi, arguments, data=None):
+def encode_abi(
+    w3: "Web3",
+    abi: ABIFunction,
+    arguments: Sequence[Any],
+    data: Optional[HexStr] = None,
+) -> HexStr:
     argument_types = get_abi_input_types(abi)
 
-    if not check_if_arguments_can_be_encoded(abi, arguments, {}):
+    if not check_if_arguments_can_be_encoded(abi, w3.codec, arguments, {}):
         raise TypeError(
             "One or more arguments could not be encoded to the necessary "
-            "ABI type.  Expected types are: {0}".format(
-                ', '.join(argument_types),
-            )
+            f"ABI type.  Expected types are: {', '.join(argument_types)}"
         )
 
     normalizers = [
-        abi_ens_resolver(web3),
+        abi_ens_resolver(w3),
         abi_address_to_hex,
         abi_bytes_to_bytes,
         abi_string_to_text,
@@ -148,7 +218,7 @@ def encode_abi(web3, abi, arguments, data=None):
         argument_types,
         arguments,
     )
-    encoded_arguments = eth_abi_encode_abi(
+    encoded_arguments = w3.codec.encode(
         argument_types,
         normalized_arguments,
     )
@@ -160,14 +230,15 @@ def encode_abi(web3, abi, arguments, data=None):
 
 
 def prepare_transaction(
-        address,
-        web3,
-        fn_identifier,
-        contract_abi=None,
-        fn_abi=None,
-        transaction=None,
-        fn_args=None,
-        fn_kwargs=None):
+    address: ChecksumAddress,
+    w3: "Web3",
+    fn_identifier: Union[str, Type[FallbackFn], Type[ReceiveFn]],
+    contract_abi: Optional[ABI] = None,
+    fn_abi: Optional[ABIFunction] = None,
+    transaction: Optional[TxParams] = None,
+    fn_args: Optional[Sequence[Any]] = None,
+    fn_kwargs: Optional[Any] = None,
+) -> TxParams:
     """
     :parameter `is_function_abi` is used to distinguish  function abi from contract abi
     Returns a dictionary of the transaction that could be used to call this
@@ -175,23 +246,25 @@ def prepare_transaction(
     TODO: add new prepare_deploy_transaction API
     """
     if fn_abi is None:
-        fn_abi = find_matching_fn_abi(contract_abi, fn_identifier, fn_args, fn_kwargs)
+        fn_abi = find_matching_fn_abi(
+            contract_abi, w3.codec, fn_identifier, fn_args, fn_kwargs
+        )
 
     validate_payable(transaction, fn_abi)
 
     if transaction is None:
-        prepared_transaction = {}
+        prepared_transaction: TxParams = {}
     else:
-        prepared_transaction = dict(**transaction)
+        prepared_transaction = cast(TxParams, dict(**transaction))
 
-    if 'data' in prepared_transaction:
+    if "data" in prepared_transaction:
         raise ValueError("Transaction parameter may not contain a 'data' key")
 
     if address:
-        prepared_transaction.setdefault('to', address)
+        prepared_transaction.setdefault("to", address)
 
-    prepared_transaction['data'] = encode_transaction_data(
-        web3,
+    prepared_transaction["data"] = encode_transaction_data(
+        w3,
         fn_identifier,
         contract_abi,
         fn_abi,
@@ -202,42 +275,76 @@ def prepare_transaction(
 
 
 def encode_transaction_data(
-        web3,
-        fn_identifier,
-        contract_abi=None,
-        fn_abi=None,
-        args=None,
-        kwargs=None):
+    w3: "Web3",
+    fn_identifier: Union[str, Type[FallbackFn], Type[ReceiveFn]],
+    contract_abi: Optional[ABI] = None,
+    fn_abi: Optional[ABIFunction] = None,
+    args: Optional[Sequence[Any]] = None,
+    kwargs: Optional[Any] = None,
+) -> HexStr:
     if fn_identifier is FallbackFn:
-        fn_abi, fn_selector, fn_arguments = get_fallback_function_info(contract_abi, fn_abi)
+        fn_abi, fn_selector, fn_arguments = get_fallback_function_info(
+            contract_abi, fn_abi
+        )
+    elif fn_identifier is ReceiveFn:
+        fn_abi, fn_selector, fn_arguments = get_receive_function_info(
+            contract_abi, fn_abi
+        )
     elif is_text(fn_identifier):
         fn_abi, fn_selector, fn_arguments = get_function_info(
-            fn_identifier, contract_abi, fn_abi, args, kwargs,
+            # type ignored b/c fn_id here is always str b/c FallbackFn is handled above
+            fn_identifier,  # type: ignore
+            w3.codec,
+            contract_abi,
+            fn_abi,
+            args,
+            kwargs,
         )
     else:
         raise TypeError("Unsupported function identifier")
 
-    return add_0x_prefix(encode_abi(web3, fn_abi, fn_arguments, fn_selector))
+    return add_0x_prefix(encode_abi(w3, fn_abi, fn_arguments, fn_selector))
 
 
-def get_fallback_function_info(contract_abi=None, fn_abi=None):
+def get_fallback_function_info(
+    contract_abi: Optional[ABI] = None, fn_abi: Optional[ABIFunction] = None
+) -> Tuple[ABIFunction, HexStr, Tuple[Any, ...]]:
     if fn_abi is None:
         fn_abi = get_fallback_func_abi(contract_abi)
-    fn_selector = encode_hex(b'')
-    fn_arguments = tuple()
+    fn_selector = encode_hex(b"")
+    fn_arguments: Tuple[Any, ...] = tuple()
     return fn_abi, fn_selector, fn_arguments
 
 
-def get_function_info(fn_name, contract_abi=None, fn_abi=None, args=None, kwargs=None):
+def get_receive_function_info(
+    contract_abi: Optional[ABI] = None, fn_abi: Optional[ABIFunction] = None
+) -> Tuple[ABIFunction, HexStr, Tuple[Any, ...]]:
+    if fn_abi is None:
+        fn_abi = get_receive_func_abi(contract_abi)
+    fn_selector = encode_hex(b"")
+    fn_arguments: Tuple[Any, ...] = tuple()
+    return fn_abi, fn_selector, fn_arguments
+
+
+def get_function_info(
+    fn_name: str,
+    abi_codec: ABICodec,
+    contract_abi: Optional[ABI] = None,
+    fn_abi: Optional[ABIFunction] = None,
+    args: Optional[Sequence[Any]] = None,
+    kwargs: Optional[Any] = None,
+) -> Tuple[ABIFunction, HexStr, Tuple[Any, ...]]:
     if args is None:
         args = tuple()
     if kwargs is None:
         kwargs = {}
 
     if fn_abi is None:
-        fn_abi = find_matching_fn_abi(contract_abi, fn_name, args, kwargs)
+        fn_abi = find_matching_fn_abi(contract_abi, abi_codec, fn_name, args, kwargs)
 
-    fn_selector = encode_hex(function_abi_to_4byte_selector(fn_abi))
+    # typed dict cannot be used w/ a normal Dict
+    # https://github.com/python/mypy/issues/4976
+    fn_selector = encode_hex(function_abi_to_4byte_selector(fn_abi))  # type: ignore
 
     fn_arguments = merge_args_and_kwargs(fn_abi, args, kwargs)
 
@@ -246,15 +353,22 @@ def get_function_info(fn_name, contract_abi=None, fn_abi=None, args=None, kwargs
     return fn_abi, fn_selector, aligned_fn_arguments
 
 
-def validate_payable(transaction, abi):
+def validate_payable(transaction: TxParams, abi: ABIFunction) -> None:
     """Raise ValidationError if non-zero ether
-    is sent to a non payable function.
+    is sent to a non-payable function.
     """
-    if 'value' in transaction:
-        if transaction['value'] != 0:
+    if "value" in transaction:
+        if to_integer_if_hex(transaction["value"]) != 0:
             if "payable" in abi and not abi["payable"]:
                 raise ValidationError(
                     "Sending non-zero ether to a contract function "
                     "with payable=False. Please ensure that "
                     "transaction's value is 0."
                 )
+
+
+def _get_argument_readable_type(arg: Any) -> str:
+    if is_checksum_address(arg) or is_binary_address(arg):
+        return "address"
+
+    return arg.__class__.__name__

@@ -1,8 +1,10 @@
-class Empty:
-    def __bool__(self):
-        return False
+from newchain_web3._utils.compat import (
+    Literal,
+)
 
-    def __nonzero__(self):
+
+class Empty:
+    def __bool__(self) -> Literal[False]:
         return False
 
 
